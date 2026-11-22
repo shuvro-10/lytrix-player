@@ -8,34 +8,61 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
+import android.provider.Settings
 import android.widget.Toast
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
-import com.google.firebase.database.FirebaseDatabase
+import androidx.core.content.FileProvider
 import com.musicplayer.lytrix.BuildConfig
 import com.musicplayer.lytrix.R
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import org.json.JSONObject
+import java.io.File
+import java.io.FileOutputStream
+import java.util.concurrent.TimeUnit
 
 data class AppUpdateInfo(
     val versionCode: Long = 0L,
     val versionName: String = "",
+    val currentVersion: String = BuildConfig.VERSION_NAME,
+    val title: String = "",
     val changelog: String = "",
     val downloadUrl: String = "",
+    val apkSize: Long = 0L,
+    val apkName: String = "",
+    val htmlUrl: String = "",
     val forceUpdate: Boolean = false
 )
 
+sealed class DownloadProgressState {
+    object Idle : DownloadProgressState()
+    data class Downloading(val progress: Float, val downloadedBytes: Long, val totalBytes: Long) : DownloadProgressState()
+    data class Completed(val file: File) : DownloadProgressState()
+    data class Error(val message: String) : DownloadProgressState()
+}
+
 object AppUpdateManager {
+
+    private const val GITHUB_REPO = "shuvro-10/lytrix-player"
+    private const val GITHUB_API_URL = "https://api.github.com/repos/$GITHUB_REPO/releases/latest"
 
     private const val CHANNEL_ID = "app_updates_channel"
     private const val NOTIFICATION_ID = 9001
     private const val PREFS_NAME = "app_update_preferences"
-    private const val KEY_DISMISSED_VERSION = "dismissed_version_code"
-    private const val CHECK_INTERVAL_MILLIS = 3 * 60 * 60 * 1000L // 3 Hours
+    private const val KEY_DISMISSED_VERSION = "dismissed_version_name"
+    private const val CHECK_INTERVAL_MILLIS = 3 * 60 * 60 * 1000L // 3 Hours cache
 
-    private const val RTDB_URL = "https://lytrix-player-default-rtdb.asia-southeast1.firebasedatabase.app"
+    private val httpClient: OkHttpClient by lazy {
+        OkHttpClient.Builder()
+            .connectTimeout(12, TimeUnit.SECONDS)
+            .readTimeout(20, TimeUnit.SECONDS)
+            .followRedirects(true)
+            .build()
+    }
 
     var lastCheckTime: Long = 0L
         private set
@@ -44,8 +71,8 @@ object AppUpdateManager {
         private set
 
     /**
-     * Firebase Realtime Database থেকে app_update নোড চেক করে।
-     * forceRefresh = true দিলে ক্যাশ বাইপাস করে সরাসরি ফায়ারবেস থেকে নতুন ডাটা আনবে।
+     * Checks for the latest release directly from GitHub Releases API.
+     * forceRefresh = true bypasses the 3-hour cache and hits GitHub immediately.
      */
     suspend fun checkForUpdate(forceRefresh: Boolean = false): Result<Pair<AppUpdateInfo?, Boolean>> =
         withContext(Dispatchers.IO) {
@@ -55,94 +82,262 @@ object AppUpdateManager {
 
                 if (!shouldFetch && cachedUpdateInfo != null) {
                     val info = cachedUpdateInfo!!
-                    val hasUpdate = isUpdateAvailable(info.versionCode)
+                    val hasUpdate = isUpdateAvailable(info.versionName)
                     return@runCatching (info to hasUpdate)
                 }
 
-                val dbRef = try {
-                    FirebaseDatabase.getInstance(RTDB_URL).reference.child("app_update")
-                } catch (_: Exception) {
-                    FirebaseDatabase.getInstance().reference.child("app_update")
+                val request = Request.Builder()
+                    .url(GITHUB_API_URL)
+                    .header("User-Agent", "Lytrix-Player/${BuildConfig.VERSION_NAME}")
+                    .header("Accept", "application/vnd.github.v3+json")
+                    .build()
+
+                val responseStr = httpClient.newCall(request).execute().use { resp ->
+                    if (!resp.isSuccessful) {
+                        throw IllegalStateException("GitHub API returned HTTP ${resp.code}")
+                    }
+                    resp.body?.string() ?: throw IllegalStateException("Empty response body from GitHub")
                 }
 
-                val snapshot = dbRef.get().await()
+                val json = JSONObject(responseStr)
+                val rawTag = json.optString("tag_name", "")
+                val cleanVersion = rawTag.removePrefix("v").removePrefix("V").trim()
+                val releaseTitle = json.optString("name", "Lytrix Player v$cleanVersion")
+                val changelog = json.optString("body", "").trim()
+                val htmlUrl = json.optString("html_url", "https://github.com/$GITHUB_REPO/releases")
 
-                if (!snapshot.exists()) {
-                    return@runCatching (null to false)
+                // Locate the .apk asset in the release
+                val assets = json.optJSONArray("assets")
+                var apkUrl = ""
+                var apkSize = 0L
+                var apkName = ""
+
+                if (assets != null) {
+                    for (i in 0 until assets.length()) {
+                        val asset = assets.optJSONObject(i) ?: continue
+                        val name = asset.optString("name", "")
+                        if (name.endsWith(".apk", ignoreCase = true)) {
+                            apkUrl = asset.optString("browser_download_url", "")
+                            apkSize = asset.optLong("size", 0L)
+                            apkName = name
+                            // Prefer arm64 or universal apk if multiple present
+                            if (name.contains("arm64", ignoreCase = true) || name.contains("universal", ignoreCase = true)) {
+                                break
+                            }
+                        }
+                    }
                 }
 
-                val versionCodeRaw = snapshot.child("versionCode").value
-                val versionCode = when (versionCodeRaw) {
-                    is Number -> versionCodeRaw.toLong()
-                    is String -> versionCodeRaw.toLongOrNull() ?: 0L
-                    else -> 0L
+                if (apkUrl.isBlank()) {
+                    apkUrl = htmlUrl // fallback to GitHub release page if no direct APK uploaded yet
                 }
-
-                val versionName = snapshot.child("versionName").getValue(String::class.java) ?: ""
-                val changelog = snapshot.child("changelog").getValue(String::class.java) ?: ""
-                val downloadUrl = snapshot.child("downloadUrl").getValue(String::class.java) ?: ""
-                val forceUpdate = snapshot.child("forceUpdate").getValue(Boolean::class.java) ?: false
 
                 val info = AppUpdateInfo(
-                    versionCode = versionCode,
-                    versionName = versionName,
+                    versionCode = 0L,
+                    versionName = cleanVersion,
+                    currentVersion = BuildConfig.VERSION_NAME,
+                    title = releaseTitle,
                     changelog = changelog,
-                    downloadUrl = downloadUrl,
-                    forceUpdate = forceUpdate
+                    downloadUrl = apkUrl,
+                    apkSize = apkSize,
+                    apkName = apkName,
+                    htmlUrl = htmlUrl,
+                    forceUpdate = false
                 )
 
                 cachedUpdateInfo = info
                 lastCheckTime = currentTime
 
-                val hasUpdate = isUpdateAvailable(info.versionCode)
+                val hasUpdate = isUpdateAvailable(cleanVersion)
                 (info to hasUpdate)
             }
         }
 
     /**
-     * সার্ভারের ভার্সন কোড বর্তমান অ্যাপের ভার্সন কোডের চেয়ে বড় কিনা তা তুলনা করে।
+     * Compares semantic versions (e.g. "1.0.3" > "1.0.2")
      */
+    fun isUpdateAvailable(serverVersionName: String): Boolean {
+        if (serverVersionName.isBlank()) return false
+        val currentVer = BuildConfig.VERSION_NAME.removePrefix("v").removePrefix("V").substringBefore("-").trim()
+        val targetVer = serverVersionName.removePrefix("v").removePrefix("V").substringBefore("-").trim()
+
+        val currParts = currentVer.split(".").mapNotNull { it.toIntOrNull() }
+        val targetParts = targetVer.split(".").mapNotNull { it.toIntOrNull() }
+
+        val maxLen = maxOf(currParts.size, targetParts.size)
+        for (i in 0 until maxLen) {
+            val c = currParts.getOrElse(i) { 0 }
+            val t = targetParts.getOrElse(i) { 0 }
+            if (t > c) return true
+            if (t < c) return false
+        }
+        return false
+    }
+
     fun isUpdateAvailable(serverVersionCode: Long): Boolean {
-        val currentVersionCode = BuildConfig.VERSION_CODE.toLong()
-        return serverVersionCode > currentVersionCode
+        return cachedUpdateInfo?.let { isUpdateAvailable(it.versionName) } ?: false
     }
 
     /**
-     * নির্দিষ্ট ভার্সনটি ইউজার আগে 'Later' দিয়ে ডিসমিস করেছিল কিনা চেক করে।
+     * Checks if this version was previously dismissed with 'Later'
      */
+    fun isVersionDismissed(context: Context, versionName: String): Boolean {
+        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        return prefs.getString(KEY_DISMISSED_VERSION, null) == versionName
+    }
+
     fun isVersionDismissed(context: Context, versionCode: Long): Boolean {
-        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-        return prefs.getLong(KEY_DISMISSED_VERSION, -1L) == versionCode
+        return isVersionDismissed(context, cachedUpdateInfo?.versionName ?: versionCode.toString())
     }
 
     /**
-     * ইউজার 'Later' চাপলে ঐ ভার্সনটি সেভ করে রাখে যাতে বারবার ডিস্টার্ব না করে।
+     * Records dismissed version
      */
-    fun dismissVersion(context: Context, versionCode: Long) {
+    fun dismissVersion(context: Context, versionName: String) {
         val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-        prefs.edit().putLong(KEY_DISMISSED_VERSION, versionCode).apply()
+        prefs.edit().putString(KEY_DISMISSED_VERSION, versionName).apply()
+    }
+
+    fun dismissVersion(context: Context, versionCode: Long) {
+        dismissVersion(context, cachedUpdateInfo?.versionName ?: versionCode.toString())
     }
 
     /**
-     * অ্যান্ড্রয়েডের নোটিফিকেশন চ্যানেলে Meld এর মতো সুন্দর সিস্টেম নোটিফিকেশন পাঠায়।
+     * Downloads the APK directly inside the app with real-time stream progress.
+     */
+    suspend fun downloadApk(
+        context: Context,
+        downloadUrl: String,
+        versionName: String,
+        onProgress: (DownloadProgressState) -> Unit
+    ) = withContext(Dispatchers.IO) {
+        try {
+            onProgress(DownloadProgressState.Downloading(0f, 0L, 0L))
+
+            val downloadDir = File(context.externalCacheDir ?: context.cacheDir, "updates").apply { mkdirs() }
+            val targetFile = File(downloadDir, "LytrixPlayer-v$versionName.apk")
+            if (targetFile.exists()) targetFile.delete()
+
+            val request = Request.Builder()
+                .url(downloadUrl)
+                .header("User-Agent", "Lytrix-Player/${BuildConfig.VERSION_NAME}")
+                .build()
+
+            val response = httpClient.newCall(request).execute()
+            if (!response.isSuccessful) {
+                onProgress(DownloadProgressState.Error("Server returned HTTP ${response.code}"))
+                return@withContext
+            }
+
+            val body = response.body ?: run {
+                onProgress(DownloadProgressState.Error("Empty download stream"))
+                return@withContext
+            }
+
+            val totalBytes = body.contentLength()
+            var downloadedBytes = 0L
+
+            body.byteStream().use { input ->
+                FileOutputStream(targetFile).use { output ->
+                    val buffer = ByteArray(8 * 1024)
+                    var read: Int
+                    var lastUpdate = System.currentTimeMillis()
+
+                    while (input.read(buffer).also { read = it } != -1) {
+                        output.write(buffer, 0, read)
+                        downloadedBytes += read
+
+                        val now = System.currentTimeMillis()
+                        if (now - lastUpdate > 100 || downloadedBytes == totalBytes) {
+                            lastUpdate = now
+                            val progress = if (totalBytes > 0) downloadedBytes.toFloat() / totalBytes else 0f
+                            onProgress(DownloadProgressState.Downloading(progress.coerceIn(0f, 1f), downloadedBytes, totalBytes))
+                        }
+                    }
+                    output.flush()
+                }
+            }
+
+            onProgress(DownloadProgressState.Completed(targetFile))
+            withContext(Dispatchers.Main) {
+                installApk(context, targetFile)
+            }
+        } catch (e: Exception) {
+            onProgress(DownloadProgressState.Error(e.message ?: "Download failed"))
+        }
+    }
+
+    /**
+     * Prompts the Android Package Installer to install the downloaded APK.
+     */
+    fun installApk(context: Context, apkFile: File) {
+        if (!apkFile.exists() || apkFile.length() == 0L) {
+            Toast.makeText(context, "APK file not found", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            if (!context.packageManager.canRequestPackageInstalls()) {
+                val intent = Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES).apply {
+                    data = Uri.parse("package:${context.packageName}")
+                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                }
+                context.startActivity(intent)
+                Toast.makeText(context, "Please allow installation permission for Lytrix Player", Toast.LENGTH_LONG).show()
+                return
+            }
+        }
+
+        try {
+            val uri = FileProvider.getUriForFile(
+                context,
+                "${context.packageName}.FileProvider",
+                apkFile
+            )
+            val intent = Intent(Intent.ACTION_VIEW).apply {
+                setDataAndType(uri, "application/vnd.android.package-archive")
+                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            }
+            context.startActivity(intent)
+        } catch (e: Exception) {
+            Toast.makeText(context, "Unable to launch installer: ${e.message}", Toast.LENGTH_LONG).show()
+        }
+    }
+
+    /**
+     * Fallback: opens GitHub release in browser.
+     */
+    fun openDownloadUrl(context: Context, url: String) {
+        if (url.isBlank()) {
+            Toast.makeText(context, "Download link not available", Toast.LENGTH_SHORT).show()
+            return
+        }
+        try {
+            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url)).apply {
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK
+            }
+            context.startActivity(intent)
+        } catch (e: Exception) {
+            Toast.makeText(context, "Could not open download link: ${e.message}", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    /**
+     * Android system notification for new version.
      */
     fun showUpdateNotification(context: Context, updateInfo: AppUpdateInfo) {
         try {
             createNotificationChannel(context)
 
-            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(updateInfo.downloadUrl)).apply {
+            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(updateInfo.htmlUrl)).apply {
                 flags = Intent.FLAG_ACTIVITY_NEW_TASK
             }
             val flags = PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
             val pendingIntent = PendingIntent.getActivity(context, NOTIFICATION_ID, intent, flags)
 
-            val title = if (updateInfo.versionName.isNotBlank()) {
-                "Lytrix Player v${updateInfo.versionName} Available"
-            } else {
-                "Lytrix Player Update Available"
-            }
-
-            val text = "A new version is ready to install. Tap to download."
+            val title = "Lytrix Player v${updateInfo.versionName} Available"
+            val text = "A new update is ready to install. Tap to view."
 
             val notification = NotificationCompat.Builder(context, CHANNEL_ID)
                 .setSmallIcon(R.drawable.ic_update_notification)
@@ -175,24 +370,6 @@ object AppUpdateManager {
             val notificationManager =
                 context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
             notificationManager.createNotificationChannel(channel)
-        }
-    }
-
-    /**
-     * সরাসরি ব্রাউজার বা ডাউনলোডারে APK ডাউনলোড লিংক ওপেন করে।
-     */
-    fun openDownloadUrl(context: Context, url: String) {
-        if (url.isBlank()) {
-            Toast.makeText(context, "Download link not available", Toast.LENGTH_SHORT).show()
-            return
-        }
-        try {
-            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url)).apply {
-                flags = Intent.FLAG_ACTIVITY_NEW_TASK
-            }
-            context.startActivity(intent)
-        } catch (e: Exception) {
-            Toast.makeText(context, "Could not open download link: ${e.message}", Toast.LENGTH_SHORT).show()
         }
     }
 }

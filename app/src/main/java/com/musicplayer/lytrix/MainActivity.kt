@@ -386,7 +386,7 @@ class MainActivity : ComponentActivity() {
 
                             com.musicplayer.lytrix.utils.AppUpdateManager.showUpdateNotification(context, info)
 
-                            val isDismissed = com.musicplayer.lytrix.utils.AppUpdateManager.isVersionDismissed(context, info.versionCode)
+                            val isDismissed = com.musicplayer.lytrix.utils.AppUpdateManager.isVersionDismissed(context, info.versionName)
 
                             if (!isDismissed || info.forceUpdate) {
 

@@ -228,7 +228,7 @@ fun SettingsMainScreen(
     var isCheckingUpdate by remember { mutableStateOf(false) }
     var updateInfoState by remember { mutableStateOf<AppUpdateInfo?>(AppUpdateManager.cachedUpdateInfo) }
     var hasUpdateState by remember {
-        mutableStateOf(AppUpdateManager.cachedUpdateInfo?.let { AppUpdateManager.isUpdateAvailable(it.versionCode) } ?: false)
+        mutableStateOf(AppUpdateManager.cachedUpdateInfo?.let { AppUpdateManager.isUpdateAvailable(it.versionName) } ?: false)
     }
     var updateCheckMessage by remember { mutableStateOf<String?>(null) }
     var showUpdateDialog by remember { mutableStateOf(false) }
