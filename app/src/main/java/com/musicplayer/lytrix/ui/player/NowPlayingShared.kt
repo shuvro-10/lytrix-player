@@ -3,6 +3,8 @@
 
 package com.musicplayer.lytrix.ui.player
 
+import com.musicplayer.lytrix.ui.component.NowPlayingVideoOverlayControls
+
 import android.app.Activity
 import android.content.Context
 import android.graphics.drawable.BitmapDrawable
@@ -626,6 +628,8 @@ fun NowPlayingMediaStage(
                     },
                     modifier = Modifier.fillMaxSize().alpha(videoAlpha)
                 )
+
+                com.musicplayer.lytrix.ui.component.NowPlayingVideoOverlayControls()
             }
         }
     } else if (visualMedia != null) {

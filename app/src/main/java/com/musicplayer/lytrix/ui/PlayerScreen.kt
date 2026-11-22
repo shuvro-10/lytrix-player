@@ -619,13 +619,13 @@ fun PlayerScreen(onNavigateToOnlineSettings: () -> Unit = {},
                             }
 
                             val tabItems = listOf(
-                                Triple("Discover", com.musicplayer.lytrix.ui.icons.MetrolistIcons.Outlined.Home, com.musicplayer.lytrix.ui.icons.MetrolistIcons.Filled.Home),
-                                Triple("Videos", com.musicplayer.lytrix.ui.icons.MetrolistIcons.Outlined.SmartDisplay, com.musicplayer.lytrix.ui.icons.MetrolistIcons.Filled.SmartDisplay),
-                                Triple(getString("songs"), com.musicplayer.lytrix.ui.icons.MetrolistIcons.Outlined.MusicNote, com.musicplayer.lytrix.ui.icons.MetrolistIcons.Filled.MusicNote),
-                                Triple(getString("playlists"), com.musicplayer.lytrix.ui.icons.MetrolistIcons.Outlined.LibraryMusic, com.musicplayer.lytrix.ui.icons.MetrolistIcons.Filled.LibraryMusic),
+                                Triple("Discover", com.musicplayer.lytrix.ui.icons.LytrixIcons.Outlined.Home, com.musicplayer.lytrix.ui.icons.LytrixIcons.Filled.Home),
+                                Triple("Videos", com.musicplayer.lytrix.ui.icons.LytrixIcons.Outlined.SmartDisplay, com.musicplayer.lytrix.ui.icons.LytrixIcons.Filled.SmartDisplay),
+                                Triple(getString("songs"), com.musicplayer.lytrix.ui.icons.LytrixIcons.Outlined.MusicNote, com.musicplayer.lytrix.ui.icons.LytrixIcons.Filled.MusicNote),
+                                Triple(getString("playlists"), com.musicplayer.lytrix.ui.icons.LytrixIcons.Outlined.LibraryMusic, com.musicplayer.lytrix.ui.icons.LytrixIcons.Filled.LibraryMusic),
                                 Triple(getString("folders"), Icons.Outlined.Folder, Icons.Filled.Folder),
-                                Triple(getString("artists"), com.musicplayer.lytrix.ui.icons.MetrolistIcons.Outlined.Person, com.musicplayer.lytrix.ui.icons.MetrolistIcons.Filled.Person),
-                                Triple(getString("albums"), com.musicplayer.lytrix.ui.icons.MetrolistIcons.Outlined.Album, com.musicplayer.lytrix.ui.icons.MetrolistIcons.Filled.Album)
+                                Triple(getString("artists"), com.musicplayer.lytrix.ui.icons.LytrixIcons.Outlined.Person, com.musicplayer.lytrix.ui.icons.LytrixIcons.Filled.Person),
+                                Triple(getString("albums"), com.musicplayer.lytrix.ui.icons.LytrixIcons.Outlined.Album, com.musicplayer.lytrix.ui.icons.LytrixIcons.Filled.Album)
                             )
 
                             val tabListState = rememberLazyListState()

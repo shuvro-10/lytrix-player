@@ -28,7 +28,7 @@ import java.nio.charset.StandardCharsets
  *   { "959dabb2": "2026-06-12", "445213fb": "2026-06-10", ... }
  */
 object PlayerDatesStore {
-    private const val TAG = "Metrolist_CipherDates"
+    private const val TAG = "Lytrix_CipherDates"
 
     private val REMOTE_URL by lazy {
         val encoded = "aHR0cHM6Ly9yYXcuZ2l0aHVidXNlcmNvbnRlbnQuY29tL01ldHJvbGlzdEdyb3VwL01ldHJvbGlzdC9tYWluL2FwcC9zcmMvbWFpbi9hc3NldHMvcGxheWVyX2RhdGVzLmpzb24="

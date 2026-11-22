@@ -106,7 +106,7 @@ import com.musicplayer.lytrix.innertube.models.AlbumItem
 import com.musicplayer.lytrix.innertube.pages.AlbumPage
 import com.musicplayer.lytrix.innertube.pages.PlaylistPage
 import com.musicplayer.lytrix.model.JioSaavnSong
-import com.musicplayer.lytrix.ui.icons.MetrolistIcons
+import com.musicplayer.lytrix.ui.icons.LytrixIcons
 import com.musicplayer.lytrix.ui.icons.MorphingMetroIcon
 import java.net.URLEncoder
 
@@ -119,7 +119,7 @@ import java.net.URLEncoder
  * - GroupedListItem.kt & CurrentSongRow.kt & SongListItem
  *
  * Uses authentic Material 3 Expressive ButtonGroup, SplitButtonLayout, ToggleButton,
- * ContainedLoadingIndicator, Emphasized typography, MotionScheme, and MetrolistIcons.
+ * ContainedLoadingIndicator, Emphasized typography, MotionScheme, and LytrixIcons.
  */
 
 private enum class MetroCollectionSort(val label: String) {
@@ -897,13 +897,13 @@ private fun MetroCollectionScreenCore(
                                     currentSong?.id?.toString() == item.track.id
                                 val isTrackPlaying = isCurrent && isPlaying
 
-                                MetroGroupedListItem(
+                                LytrixGroupedListItem(
                                     index = index,
                                     count = displayedTracks.size,
                                     isCurrent = isCurrent,
                                     modifier = itemModifier.padding(horizontal = MetroCollectionHorizontalPadding),
                                 ) {
-                                    MetroCollectionSongListItem(
+                                    LytrixCollectionSongListItem(
                                         track = item,
                                         displayIndex = index,
                                         collectionArtworkUrl = artworkUrl,
@@ -990,7 +990,7 @@ private fun MetroCollectionScreenCore(
                         .padding(start = 8.dp),
                 ) {
                     Icon(
-                        imageVector = MetrolistIcons.AutoMirrored.Filled.ArrowBack,
+                        imageVector = LytrixIcons.AutoMirrored.Filled.ArrowBack,
                         contentDescription = "Back",
                         tint = MaterialTheme.colorScheme.onSurface,
                     )
@@ -1024,7 +1024,7 @@ private fun MetroCollectionScreenCore(
                             shapes = IconButtonDefaults.shapes(),
                         ) {
                             Icon(
-                                imageVector = MetrolistIcons.Default.MoreVert,
+                                imageVector = LytrixIcons.Default.MoreVert,
                                 contentDescription = "More options",
                                 tint = MaterialTheme.colorScheme.onSurface,
                             )
@@ -1040,7 +1040,7 @@ private fun MetroCollectionScreenCore(
                                 text = { Text(if (isFullyDownloaded) "Downloaded" else downloadLabel) },
                                 leadingIcon = {
                                     Icon(
-                                        imageVector = if (isFullyDownloaded) MetrolistIcons.Outlined.OfflinePin else MetrolistIcons.Outlined.Download,
+                                        imageVector = if (isFullyDownloaded) LytrixIcons.Outlined.OfflinePin else LytrixIcons.Outlined.Download,
                                         contentDescription = null,
                                         tint = if (isFullyDownloaded) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface,
                                     )
@@ -1055,7 +1055,7 @@ private fun MetroCollectionScreenCore(
                                     text = { Text(if (isSaved) "Remove from library" else "Save to library") },
                                     leadingIcon = {
                                         Icon(
-                                            imageVector = if (isSaved) MetrolistIcons.Filled.Favorite else MetrolistIcons.Outlined.FavoriteBorder,
+                                            imageVector = if (isSaved) LytrixIcons.Filled.Favorite else LytrixIcons.Outlined.FavoriteBorder,
                                             contentDescription = null,
                                             tint = if (isSaved) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface,
                                         )
@@ -1070,7 +1070,7 @@ private fun MetroCollectionScreenCore(
                                 DropdownMenuItem(
                                     text = { Text("Share") },
                                     leadingIcon = {
-                                        Icon(MetrolistIcons.Outlined.Share, contentDescription = null)
+                                        Icon(LytrixIcons.Outlined.Share, contentDescription = null)
                                     },
                                     onClick = {
                                         showOverflowMenu = false
@@ -1302,7 +1302,7 @@ private fun MetroExpressiveHeaderActions(
     ) {
         if (showPlayback) {
             val labels = listOf("Shuffle", "Play all")
-            val icons = listOf(MetrolistIcons.Rounded.Shuffle, MetrolistIcons.Default.PlayArrow)
+            val icons = listOf(LytrixIcons.Rounded.Shuffle, LytrixIcons.Default.PlayArrow)
             val callbacks = listOf(onShuffle, onPlayAll)
 
             ButtonGroup(
@@ -1378,8 +1378,8 @@ private fun MetroExpressiveHeaderActions(
             ) {
                 MorphingMetroIcon(
                     selected = isFavorite,
-                    outlinedIcon = MetrolistIcons.Outlined.FavoriteBorder,
-                    filledIcon = MetrolistIcons.Filled.Favorite,
+                    outlinedIcon = LytrixIcons.Outlined.FavoriteBorder,
+                    filledIcon = LytrixIcons.Filled.Favorite,
                     contentDescription = if (isFavorite) "Remove from favorites" else "Add to favorites",
                     modifier = Modifier.size(20.dp),
                 )
@@ -1416,7 +1416,7 @@ private fun MetroInlineSearchRow(
                     onClick = onSearchToggle,
                     shapes = IconButtonDefaults.shapes(),
                 ) {
-                    Icon(MetrolistIcons.Default.Search, contentDescription = "Search songs", modifier = Modifier.size(20.dp))
+                    Icon(LytrixIcons.Default.Search, contentDescription = "Search songs", modifier = Modifier.size(20.dp))
                 }
             }
         } else {
@@ -1438,7 +1438,7 @@ private fun MetroInlineSearchRow(
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Icon(
-                        imageVector = MetrolistIcons.Outlined.Search,
+                        imageVector = LytrixIcons.Outlined.Search,
                         contentDescription = null,
                         tint = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.size(20.dp),
@@ -1472,7 +1472,7 @@ private fun MetroInlineSearchRow(
                         modifier = Modifier.size(32.dp),
                     ) {
                         Icon(
-                            imageVector = MetrolistIcons.Default.Close,
+                            imageVector = LytrixIcons.Default.Close,
                             contentDescription = "Close search",
                             tint = MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier.size(18.dp),
@@ -1537,7 +1537,7 @@ private fun MetroExpressiveOrderControls(
                     shapes = SplitButtonDefaults.trailingButtonShapesFor(SplitButtonDefaults.MediumContainerHeight),
                 ) {
                     Icon(
-                        imageVector = MetrolistIcons.Outlined.KeyboardArrowDown,
+                        imageVector = LytrixIcons.Outlined.KeyboardArrowDown,
                         contentDescription = "Sort direction",
                         modifier = Modifier
                             .size(SplitButtonDefaults.TrailingIconSize)
@@ -1566,7 +1566,7 @@ private fun MetroExpressiveOrderControls(
                     trailingIcon = if (isSelected) {
                         {
                             Icon(
-                                imageVector = MetrolistIcons.Filled.Check,
+                                imageVector = LytrixIcons.Filled.Check,
                                 contentDescription = null,
                                 tint = MaterialTheme.colorScheme.primary,
                                 modifier = Modifier.size(18.dp),
@@ -1586,7 +1586,7 @@ private fun MetroExpressiveOrderControls(
 }
 
 @Composable
-private fun MetroGroupedListItem(
+private fun LytrixGroupedListItem(
     index: Int,
     count: Int,
     isCurrent: Boolean,
@@ -1627,7 +1627,7 @@ private fun MetroGroupedListItem(
 }
 
 @Composable
-private fun MetroCollectionSongListItem(
+private fun LytrixCollectionSongListItem(
     track: MetroCollectionTrack,
     displayIndex: Int,
     collectionArtworkUrl: String,
@@ -1769,7 +1769,7 @@ private fun MetroCollectionSongListItem(
             modifier = Modifier.size(38.dp),
         ) {
             Icon(
-                imageVector = MetrolistIcons.Default.MoreVert,
+                imageVector = LytrixIcons.Default.MoreVert,
                 contentDescription = "More options",
                 tint = if (isCurrent) contentColor else MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.size(20.dp),

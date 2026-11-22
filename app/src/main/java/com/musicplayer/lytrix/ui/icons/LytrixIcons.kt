@@ -5,11 +5,11 @@ package com.musicplayer.lytrix.ui.icons
 import androidx.compose.ui.graphics.vector.ImageVector
 
 /** Material Symbols used throughout the Android, shared, and desktop UI. */
-object MetrolistIcons {
-    val Filled: MetrolistIconsFilled = MetrolistIconsFilled
-    val Default: MetrolistIconsFilled = MetrolistIconsFilled
-    val Outlined: MetrolistIconsOutlined = MetrolistIconsOutlined
-    val Rounded: MetrolistIconsRounded = MetrolistIconsRounded
+object LytrixIcons {
+    val Filled: LytrixIconsFilled = LytrixIconsFilled
+    val Default: LytrixIconsFilled = LytrixIconsFilled
+    val Outlined: LytrixIconsOutlined = LytrixIconsOutlined
+    val Rounded: LytrixIconsRounded = LytrixIconsRounded
 
     object AutoMirrored {
         object Filled {

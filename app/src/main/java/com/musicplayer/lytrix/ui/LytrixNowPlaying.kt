@@ -3,6 +3,8 @@
 
 package com.musicplayer.lytrix.ui
 
+import com.musicplayer.lytrix.ui.component.NowPlayingVideoOverlayControls
+
 import android.content.Context
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -1119,8 +1121,8 @@ fun MeldNowPlayingFullScreen(
                                 ) {
                                     com.musicplayer.lytrix.ui.icons.MorphingMetroIcon(
                                         selected = displayIsFavorite,
-                                        outlinedIcon = com.musicplayer.lytrix.ui.icons.MetrolistIcons.Outlined.FavoriteBorder,
-                                        filledIcon = com.musicplayer.lytrix.ui.icons.MetrolistIcons.Filled.Favorite,
+                                        outlinedIcon = com.musicplayer.lytrix.ui.icons.LytrixIcons.Outlined.FavoriteBorder,
+                                        filledIcon = com.musicplayer.lytrix.ui.icons.LytrixIcons.Filled.Favorite,
                                         contentDescription = "Favorite",
                                         tint = if (displayIsFavorite) Color(0xFFE53935) else contentColorOnAccent,
                                         modifier = Modifier.size(20.dp)
@@ -1247,7 +1249,7 @@ fun MeldNowPlayingFullScreen(
                                 },
                             contentAlignment = Alignment.Center
                         ) {
-                            Icon(com.musicplayer.lytrix.ui.icons.MetrolistIcons.Rounded.SkipPrevious, contentDescription = "Previous", tint = Color.White, modifier = Modifier.size(28.dp))
+                            Icon(com.musicplayer.lytrix.ui.icons.LytrixIcons.Rounded.SkipPrevious, contentDescription = "Previous", tint = Color.White, modifier = Modifier.size(28.dp))
                         }
 
                         Spacer(modifier = Modifier.width(16.dp))
@@ -1278,8 +1280,8 @@ fun MeldNowPlayingFullScreen(
                                 ) {
                                     com.musicplayer.lytrix.ui.component.MorphingPlayPauseIcon(
                                         isPlaying = isPlaying,
-                                        playIcon = com.musicplayer.lytrix.ui.icons.MetrolistIcons.Rounded.PlayArrow,
-                                        pauseIcon = com.musicplayer.lytrix.ui.icons.MetrolistIcons.Rounded.Pause,
+                                        playIcon = com.musicplayer.lytrix.ui.icons.LytrixIcons.Rounded.PlayArrow,
+                                        pauseIcon = com.musicplayer.lytrix.ui.icons.LytrixIcons.Rounded.Pause,
                                         tint = contentColorOnAccent,
                                         modifier = Modifier.size(28.dp)
                                     )
@@ -1326,7 +1328,7 @@ fun MeldNowPlayingFullScreen(
                                 },
                             contentAlignment = Alignment.Center
                         ) {
-                            Icon(com.musicplayer.lytrix.ui.icons.MetrolistIcons.Rounded.SkipNext, contentDescription = "Next", tint = Color.White, modifier = Modifier.size(28.dp))
+                            Icon(com.musicplayer.lytrix.ui.icons.LytrixIcons.Rounded.SkipNext, contentDescription = "Next", tint = Color.White, modifier = Modifier.size(28.dp))
                         }
 
                         if (!isCanvasBackground) {
@@ -1340,7 +1342,7 @@ fun MeldNowPlayingFullScreen(
                                 size = 46.dp
                             ) {
                                 Icon(
-                                    imageVector = com.musicplayer.lytrix.ui.icons.MetrolistIcons.Default.MoreVert,
+                                    imageVector = com.musicplayer.lytrix.ui.icons.LytrixIcons.Default.MoreVert,
                                     contentDescription = "More",
                                     modifier = Modifier.size(20.dp)
                                 )
@@ -1359,33 +1361,33 @@ fun MeldNowPlayingFullScreen(
                             com.musicplayer.lytrix.ui.component.MetroConnectedPlayerToolbar(
                                 actions = listOf(
                                     com.musicplayer.lytrix.ui.component.MetroToolbarAction(
-                                        outlinedIcon = com.musicplayer.lytrix.ui.icons.MetrolistIcons.AutoMirrored.Rounded.QueueMusic,
+                                        outlinedIcon = com.musicplayer.lytrix.ui.icons.LytrixIcons.AutoMirrored.Rounded.QueueMusic,
                                         contentDescription = "Queue",
                                         checked = showQueue,
                                         onClick = { showQueue = true }
                                     ),
                                     com.musicplayer.lytrix.ui.component.MetroToolbarAction(
-                                        outlinedIcon = com.musicplayer.lytrix.ui.icons.MetrolistIcons.Outlined.Bedtime,
-                                        filledIcon = com.musicplayer.lytrix.ui.icons.MetrolistIcons.Filled.Bedtime,
+                                        outlinedIcon = com.musicplayer.lytrix.ui.icons.LytrixIcons.Outlined.Bedtime,
+                                        filledIcon = com.musicplayer.lytrix.ui.icons.LytrixIcons.Filled.Bedtime,
                                         contentDescription = "Sleep Timer",
                                         checked = sleepTimerState.isActive,
                                         text = sleepTimerDisplay,
                                         onClick = onOpenSleepTimer
                                     ),
                                     com.musicplayer.lytrix.ui.component.MetroToolbarAction(
-                                        outlinedIcon = com.musicplayer.lytrix.ui.icons.MetrolistIcons.Rounded.Shuffle,
+                                        outlinedIcon = com.musicplayer.lytrix.ui.icons.LytrixIcons.Rounded.Shuffle,
                                         contentDescription = "Shuffle",
                                         checked = shuffleEnabled,
                                         onClick = onToggleShuffle
                                     ),
                                     com.musicplayer.lytrix.ui.component.MetroToolbarAction(
-                                        outlinedIcon = com.musicplayer.lytrix.ui.icons.MetrolistIcons.Outlined.Equalizer,
+                                        outlinedIcon = com.musicplayer.lytrix.ui.icons.LytrixIcons.Outlined.Equalizer,
                                         contentDescription = "Equalizer",
                                         checked = showEqualizer,
                                         onClick = { showEqualizer = true }
                                     ),
                                     com.musicplayer.lytrix.ui.component.MetroToolbarAction(
-                                        outlinedIcon = if (repeatMode == 1) com.musicplayer.lytrix.ui.icons.MetrolistIcons.Rounded.RepeatOne else com.musicplayer.lytrix.ui.icons.MetrolistIcons.Rounded.Repeat,
+                                        outlinedIcon = if (repeatMode == 1) com.musicplayer.lytrix.ui.icons.LytrixIcons.Rounded.RepeatOne else com.musicplayer.lytrix.ui.icons.LytrixIcons.Rounded.Repeat,
                                         contentDescription = "Repeat",
                                         checked = repeatMode != 0,
                                         onClick = onToggleRepeat
@@ -1406,7 +1408,7 @@ fun MeldNowPlayingFullScreen(
                                 size = 40.dp
                             ) {
                                 Icon(
-                                    imageVector = com.musicplayer.lytrix.ui.icons.MetrolistIcons.Default.MoreVert,
+                                    imageVector = com.musicplayer.lytrix.ui.icons.LytrixIcons.Default.MoreVert,
                                     contentDescription = "More",
                                     modifier = Modifier.size(18.dp)
                                 )
@@ -1847,6 +1849,7 @@ fun MeldNowPlayingFullScreen(
                                     },
                                     modifier = Modifier.fillMaxSize()
                                 )
+                                com.musicplayer.lytrix.ui.component.NowPlayingVideoOverlayControls()
                             }
                         }
                     }
@@ -2016,8 +2019,8 @@ fun MeldNowPlayingFullScreen(
                     ) {
                         com.musicplayer.lytrix.ui.icons.MorphingMetroIcon(
                             selected = displayIsFavorite,
-                            outlinedIcon = com.musicplayer.lytrix.ui.icons.MetrolistIcons.Outlined.FavoriteBorder,
-                            filledIcon = com.musicplayer.lytrix.ui.icons.MetrolistIcons.Filled.Favorite,
+                            outlinedIcon = com.musicplayer.lytrix.ui.icons.LytrixIcons.Outlined.FavoriteBorder,
+                            filledIcon = com.musicplayer.lytrix.ui.icons.LytrixIcons.Filled.Favorite,
                             contentDescription = "Favorite",
                             tint = if (displayIsFavorite) Color(0xFFE53935) else contentColorOnAccent,
                             modifier = Modifier.size(22.dp)
@@ -2181,7 +2184,7 @@ fun MeldNowPlayingFullScreen(
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
-                        imageVector = com.musicplayer.lytrix.ui.icons.MetrolistIcons.Rounded.SkipPrevious,
+                        imageVector = com.musicplayer.lytrix.ui.icons.LytrixIcons.Rounded.SkipPrevious,
                         contentDescription = "Previous",
                         tint = Color.White,
                         modifier = Modifier.size(30.dp)
@@ -2214,8 +2217,8 @@ fun MeldNowPlayingFullScreen(
                         ) {
                             com.musicplayer.lytrix.ui.component.MorphingPlayPauseIcon(
                                 isPlaying = isPlaying,
-                                playIcon = com.musicplayer.lytrix.ui.icons.MetrolistIcons.Rounded.PlayArrow,
-                                pauseIcon = com.musicplayer.lytrix.ui.icons.MetrolistIcons.Rounded.Pause,
+                                playIcon = com.musicplayer.lytrix.ui.icons.LytrixIcons.Rounded.PlayArrow,
+                                pauseIcon = com.musicplayer.lytrix.ui.icons.LytrixIcons.Rounded.Pause,
                                 tint = contentColorOnAccent,
                                 modifier = Modifier.size(30.dp)
                             )
@@ -2266,7 +2269,7 @@ fun MeldNowPlayingFullScreen(
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
-                        imageVector = com.musicplayer.lytrix.ui.icons.MetrolistIcons.Rounded.SkipNext,
+                        imageVector = com.musicplayer.lytrix.ui.icons.LytrixIcons.Rounded.SkipNext,
                         contentDescription = "Next",
                         tint = Color.White,
                         modifier = Modifier.size(30.dp)
@@ -2287,33 +2290,33 @@ fun MeldNowPlayingFullScreen(
                 com.musicplayer.lytrix.ui.component.MetroConnectedPlayerToolbar(
                     actions = listOf(
                         com.musicplayer.lytrix.ui.component.MetroToolbarAction(
-                            outlinedIcon = com.musicplayer.lytrix.ui.icons.MetrolistIcons.AutoMirrored.Rounded.QueueMusic,
+                            outlinedIcon = com.musicplayer.lytrix.ui.icons.LytrixIcons.AutoMirrored.Rounded.QueueMusic,
                             contentDescription = "Up Next Queue",
                             checked = showQueue,
                             onClick = { showQueue = true }
                         ),
                         com.musicplayer.lytrix.ui.component.MetroToolbarAction(
-                            outlinedIcon = com.musicplayer.lytrix.ui.icons.MetrolistIcons.Outlined.Bedtime,
-                            filledIcon = com.musicplayer.lytrix.ui.icons.MetrolistIcons.Filled.Bedtime,
+                            outlinedIcon = com.musicplayer.lytrix.ui.icons.LytrixIcons.Outlined.Bedtime,
+                            filledIcon = com.musicplayer.lytrix.ui.icons.LytrixIcons.Filled.Bedtime,
                             contentDescription = "Sleep Timer",
                             checked = sleepTimerState.isActive,
                             text = sleepTimerDisplay,
                             onClick = onOpenSleepTimer
                         ),
                         com.musicplayer.lytrix.ui.component.MetroToolbarAction(
-                            outlinedIcon = com.musicplayer.lytrix.ui.icons.MetrolistIcons.Rounded.Shuffle,
+                            outlinedIcon = com.musicplayer.lytrix.ui.icons.LytrixIcons.Rounded.Shuffle,
                             contentDescription = "Shuffle",
                             checked = shuffleEnabled,
                             onClick = onToggleShuffle
                         ),
                         com.musicplayer.lytrix.ui.component.MetroToolbarAction(
-                            outlinedIcon = com.musicplayer.lytrix.ui.icons.MetrolistIcons.Outlined.Equalizer,
+                            outlinedIcon = com.musicplayer.lytrix.ui.icons.LytrixIcons.Outlined.Equalizer,
                             contentDescription = "Equalizer",
                             checked = showEqualizer,
                             onClick = { showEqualizer = true }
                         ),
                         com.musicplayer.lytrix.ui.component.MetroToolbarAction(
-                            outlinedIcon = if (repeatMode == 1) com.musicplayer.lytrix.ui.icons.MetrolistIcons.Rounded.RepeatOne else com.musicplayer.lytrix.ui.icons.MetrolistIcons.Rounded.Repeat,
+                            outlinedIcon = if (repeatMode == 1) com.musicplayer.lytrix.ui.icons.LytrixIcons.Rounded.RepeatOne else com.musicplayer.lytrix.ui.icons.LytrixIcons.Rounded.Repeat,
                             contentDescription = "Repeat",
                             checked = repeatMode != 0,
                             onClick = onToggleRepeat
@@ -2336,7 +2339,7 @@ fun MeldNowPlayingFullScreen(
                     size = 42.dp
                 ) {
                     Icon(
-                        imageVector = com.musicplayer.lytrix.ui.icons.MetrolistIcons.Default.MoreVert,
+                        imageVector = com.musicplayer.lytrix.ui.icons.LytrixIcons.Default.MoreVert,
                         contentDescription = "More",
                         modifier = Modifier.size(20.dp)
                     )

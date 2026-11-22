@@ -54,7 +54,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
-import com.musicplayer.lytrix.ui.icons.MetrolistIcons
+import com.musicplayer.lytrix.ui.icons.LytrixIcons
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -68,11 +68,11 @@ import kotlin.math.pow
 import kotlin.math.roundToInt
 
 /**
- * Verbatim Material 3 Expressive port of MetroList's TempoPitchControls.kt,
+ * Verbatim Material 3 Expressive port of Lytrix's TempoPitchControls.kt,
  * TempoPitchPreset.kt, TempoPitchInput.kt, and FormatUtils.kt.
  */
 @Serializable
-data class MetroTempoPitchPreset(
+data class LytrixTempoPitchPreset(
     val id: String,
     val name: String,
     val speed: Float,
@@ -101,34 +101,34 @@ data class MetroTempoPitchPreset(
     companion object {
         private val json = Json { ignoreUnknownKeys = true }
 
-        internal fun decode(value: String): List<MetroTempoPitchPreset> {
+        internal fun decode(value: String): List<LytrixTempoPitchPreset> {
             val entries = runCatching { json.parseToJsonElement(value) as? JsonArray }.getOrNull() ?: return emptyList()
             return entries
                 .mapNotNull { entry ->
-                    runCatching { json.decodeFromJsonElement<MetroTempoPitchPreset>(entry) }.getOrNull()?.takeIf { it.isValid }
+                    runCatching { json.decodeFromJsonElement<LytrixTempoPitchPreset>(entry) }.getOrNull()?.takeIf { it.isValid }
                 }.distinctBy { it.id }
         }
 
-        internal fun encode(presets: List<MetroTempoPitchPreset>): String =
+        internal fun encode(presets: List<LytrixTempoPitchPreset>): String =
             runCatching { json.encodeToString(presets) }.getOrDefault("[]")
     }
 }
 
-object MetroTempoPitchPresetStore {
-    private const val PREFS_NAME = "metro_tempo_pitch_prefs"
+object LytrixTempoPitchPresetStore {
+    private const val PREFS_NAME = "lytrix_tempo_pitch_prefs"
     private const val KEY_PRESETS = "presets_json"
 
-    fun load(context: Context): List<MetroTempoPitchPreset> {
+    fun load(context: Context): List<LytrixTempoPitchPreset> {
         val raw = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE).getString(KEY_PRESETS, "[]") ?: "[]"
-        return MetroTempoPitchPreset.decode(raw)
+        return LytrixTempoPitchPreset.decode(raw)
     }
 
-    fun savePreset(context: Context, name: String, speed: Float, pitch: Float): List<MetroTempoPitchPreset> {
+    fun savePreset(context: Context, name: String, speed: Float, pitch: Float): List<LytrixTempoPitchPreset> {
         val trimmed = name.trim()
         if (trimmed.isBlank()) return load(context)
         val current = load(context).toMutableList()
         current.add(
-            MetroTempoPitchPreset(
+            LytrixTempoPitchPreset(
                 id = UUID.randomUUID().toString(),
                 name = trimmed,
                 speed = speed.coerceIn(0.5f, 2f),
@@ -139,35 +139,35 @@ object MetroTempoPitchPresetStore {
         return current
     }
 
-    fun deletePreset(context: Context, id: String): List<MetroTempoPitchPreset> {
+    fun deletePreset(context: Context, id: String): List<LytrixTempoPitchPreset> {
         val updated = load(context).filterNot { it.id == id }
         persist(context, updated)
         return updated
     }
 
-    private fun persist(context: Context, presets: List<MetroTempoPitchPreset>) {
+    private fun persist(context: Context, presets: List<LytrixTempoPitchPreset>) {
         context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
             .edit()
-            .putString(KEY_PRESETS, MetroTempoPitchPreset.encode(presets))
+            .putString(KEY_PRESETS, LytrixTempoPitchPreset.encode(presets))
             .apply()
     }
 }
 
-fun formatMetroPlaybackSpeed(speed: Float): String = String.format(Locale.getDefault(), "%.2f", speed)
+fun formatLytrixPlaybackSpeed(speed: Float): String = String.format(Locale.getDefault(), "%.2f", speed)
 
-fun formatMetroPlaybackPitch(semitones: Float): String {
+fun formatLytrixPlaybackPitch(semitones: Float): String {
     val rounded = (semitones * 100).roundToInt() / 100f
     val value = String.format(Locale.getDefault(), "%.2f", rounded)
     return if (rounded > 0f) "+$value" else value
 }
 
-fun metroPlaybackPitchToSemitones(pitch: Float): Float =
+fun lytrixPlaybackPitchToSemitones(pitch: Float): Float =
     (12f * log2(pitch.coerceIn(0.5f, 2f))).coerceIn(-12f, 12f)
 
-fun metroSemitonesToPlaybackPitch(semitones: Float): Float =
+fun lytrixSemitonesToPlaybackPitch(semitones: Float): Float =
     2f.pow(semitones.coerceIn(-12f, 12f) / 12f)
 
-private fun parseMetroTempoPitchInput(
+private fun parseLytrixTempoPitchInput(
     input: String,
     range: ClosedFloatingPointRange<Float>,
 ): Float? {
@@ -189,13 +189,13 @@ private fun parseMetroTempoPitchInput(
     return value.toFloat()
 }
 
-private fun stepMetroTempoPitchValue(
+private fun stepLytrixTempoPitchValue(
     value: Float,
     delta: Float,
     range: ClosedFloatingPointRange<Float>,
 ): Float = ((value + delta) * 100).roundToInt().div(100f).coerceIn(range)
 
-private class MetroSliderDetents(
+private class LytrixSliderDetents(
     private val range: ClosedFloatingPointRange<Float>,
     private val steps: Int,
     initialValue: Float,
@@ -221,7 +221,7 @@ private class MetroSliderDetents(
 }
 
 @Composable
-fun MetroTempoPitchControls(
+fun LytrixTempoPitchControls(
     speed: Float,
     pitch: Float,
     onSpeedChange: (Float) -> Unit,
@@ -234,7 +234,7 @@ fun MetroTempoPitchControls(
     val context = LocalContext.current
     val speedLabel = "Tempo"
     val pitchLabel = "Pitch"
-    val semitones = metroPlaybackPitchToSemitones(pitch)
+    val semitones = lytrixPlaybackPitchToSemitones(pitch)
     val linkPitchToSpeed = varispeed && speedEnabled && onPitchChange != null
     val applySpeed: (Float) -> Unit = { value ->
         onSpeedChange(value)
@@ -252,7 +252,7 @@ fun MetroTempoPitchControls(
         onDispose { latestCommit() }
     }
 
-    var presets by remember { mutableStateOf(MetroTempoPitchPresetStore.load(context)) }
+    var presets by remember { mutableStateOf(LytrixTempoPitchPresetStore.load(context)) }
     var savingPreset by rememberSaveable { mutableStateOf(false) }
     var presetName by rememberSaveable { mutableStateOf("") }
     var deletingPresetId by rememberSaveable { mutableStateOf<String?>(null) }
@@ -273,7 +273,7 @@ fun MetroTempoPitchControls(
                 TextButton(
                     enabled = presetName.isNotBlank(),
                     onClick = {
-                        presets = MetroTempoPitchPresetStore.savePreset(context, presetName, speed, pitch)
+                        presets = LytrixTempoPitchPresetStore.savePreset(context, presetName, speed, pitch)
                         savingPreset = false
                     },
                     shapes = ButtonDefaults.shapes(),
@@ -295,7 +295,7 @@ fun MetroTempoPitchControls(
             confirmButton = {
                 TextButton(
                     onClick = {
-                        presets = MetroTempoPitchPresetStore.deletePreset(context, preset.id)
+                        presets = LytrixTempoPitchPresetStore.deletePreset(context, preset.id)
                         deletingPresetId = null
                     },
                     shapes = ButtonDefaults.shapes(),
@@ -321,11 +321,11 @@ fun MetroTempoPitchControls(
             style = MaterialTheme.typography.headlineSmall,
             modifier = Modifier.padding(bottom = 16.dp),
         )
-        MetroTempoPitchSlider(
+        LytrixTempoPitchSlider(
             label = speedLabel,
             value = speed,
             defaultValue = 1f,
-            valueText = "${formatMetroPlaybackSpeed(speed)}x",
+            valueText = "${formatLytrixPlaybackSpeed(speed)}x",
             range = 0.5f..2f,
             steps = 29,
             enabled = speedEnabled,
@@ -334,15 +334,15 @@ fun MetroTempoPitchControls(
         )
         if (!varispeed && onPitchChange != null) {
             Spacer(Modifier.height(16.dp))
-            MetroTempoPitchSlider(
+            LytrixTempoPitchSlider(
                 label = pitchLabel,
                 value = semitones,
                 defaultValue = 0f,
-                valueText = "${formatMetroPlaybackPitch(semitones)} st",
+                valueText = "${formatLytrixPlaybackPitch(semitones)} st",
                 range = -12f..12f,
                 steps = 479,
                 showTicks = false,
-                onValueChange = { onPitchChange(metroSemitonesToPlaybackPitch(it)) },
+                onValueChange = { onPitchChange(lytrixSemitonesToPlaybackPitch(it)) },
                 onValueChangeFinished = onCommit,
             )
         }
@@ -417,7 +417,7 @@ fun MetroTempoPitchControls(
 }
 
 @Composable
-private fun MetroTempoPitchSlider(
+private fun LytrixTempoPitchSlider(
     label: String,
     value: Float,
     defaultValue: Float,
@@ -430,7 +430,7 @@ private fun MetroTempoPitchSlider(
     onValueChangeFinished: () -> Unit = {},
 ) {
     val haptic = LocalHapticFeedback.current
-    val detents = remember(range, steps) { MetroSliderDetents(range, steps, value) }
+    val detents = remember(range, steps) { LytrixSliderDetents(range, steps, value) }
     detents.reset(value)
     var editing by rememberSaveable { mutableStateOf(false) }
 
@@ -459,13 +459,13 @@ private fun MetroTempoPitchSlider(
         IconButton(
             onClick = {
                 haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
-                onValueChange(stepMetroTempoPitchValue(value, -0.05f, range))
+                onValueChange(stepLytrixTempoPitchValue(value, -0.05f, range))
                 onValueChangeFinished()
             },
             enabled = enabled && value > range.start,
             shapes = IconButtonDefaults.shapes(),
         ) {
-            Icon(MetrolistIcons.Filled.Remove, contentDescription = "Decrease $label")
+            Icon(LytrixIcons.Filled.Remove, contentDescription = "Decrease $label")
         }
         val sliderState = rememberSliderState(
             value = value.coerceIn(range),
@@ -500,22 +500,22 @@ private fun MetroTempoPitchSlider(
         IconButton(
             onClick = {
                 haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
-                onValueChange(stepMetroTempoPitchValue(value, 0.05f, range))
+                onValueChange(stepLytrixTempoPitchValue(value, 0.05f, range))
                 onValueChangeFinished()
             },
             enabled = enabled && value < range.endInclusive,
             shapes = IconButtonDefaults.shapes(),
         ) {
-            Icon(MetrolistIcons.Filled.Add, contentDescription = "Increase $label")
+            Icon(LytrixIcons.Filled.Add, contentDescription = "Increase $label")
         }
     }
 
     if (editing && enabled) {
         var input by rememberSaveable(stateSaver = TextFieldValue.Saver) {
-            val text = formatMetroPlaybackSpeed(value)
+            val text = formatLytrixPlaybackSpeed(value)
             mutableStateOf(TextFieldValue(text, TextRange(0, text.length)))
         }
-        val parsed = parseMetroTempoPitchInput(input.text, range)
+        val parsed = parseLytrixTempoPitchInput(input.text, range)
         val focusRequester = remember { FocusRequester() }
         val confirm = {
             if (parsed != null) {
@@ -536,7 +536,7 @@ private fun MetroTempoPitchSlider(
                     isError = parsed == null,
                     supportingText = {
                         if (parsed == null) {
-                            Text("Enter a value between ${formatMetroPlaybackSpeed(range.start)} and ${formatMetroPlaybackSpeed(range.endInclusive)}")
+                            Text("Enter a value between ${formatLytrixPlaybackSpeed(range.start)} and ${formatLytrixPlaybackSpeed(range.endInclusive)}")
                         }
                     },
                     keyboardOptions = KeyboardOptions(

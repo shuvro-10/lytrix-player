@@ -370,7 +370,7 @@ fun SharedSongBottomSheet(
                                 onDismiss()
                                 viewModel.openAlbumForOnlineSong(context, song)
                             }.padding(horizontal = 16.dp, vertical = 14.dp), verticalAlignment = Alignment.CenterVertically) {
-                                Icon(com.musicplayer.lytrix.ui.icons.MetrolistIcons.Outlined.Album, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(24.dp))
+                                Icon(com.musicplayer.lytrix.ui.icons.LytrixIcons.Outlined.Album, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(24.dp))
                                 Spacer(modifier = Modifier.width(16.dp))
                                 Text("View album", color = MaterialTheme.colorScheme.onSurface, fontSize = 16.sp)
                             }

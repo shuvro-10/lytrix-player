@@ -3,6 +3,8 @@
 
 package com.musicplayer.lytrix.ui
 
+import com.musicplayer.lytrix.ui.component.NowPlayingVideoOverlayControls
+
 import android.content.Context
 import android.content.res.Configuration
 import android.media.AudioAttributes
@@ -976,6 +978,7 @@ if (videoStageActive) {
                                         },
                                         modifier = Modifier.fillMaxSize()
                                     )
+                                    com.musicplayer.lytrix.ui.component.NowPlayingVideoOverlayControls()
                                 }
                             }
                         }
@@ -1284,7 +1287,7 @@ if (videoStageActive) {
                         label = "appleShuffleTint"
                     )
                     Icon(
-                        imageVector = com.musicplayer.lytrix.ui.icons.MetrolistIcons.Rounded.Shuffle,
+                        imageVector = com.musicplayer.lytrix.ui.icons.LytrixIcons.Rounded.Shuffle,
                         contentDescription = "Shuffle",
                         tint = shuffleTint,
                         modifier = Modifier.size(22.dp)
@@ -1320,7 +1323,7 @@ if (videoStageActive) {
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
-                        imageVector = com.musicplayer.lytrix.ui.icons.MetrolistIcons.Rounded.SkipPrevious,
+                        imageVector = com.musicplayer.lytrix.ui.icons.LytrixIcons.Rounded.SkipPrevious,
                         contentDescription = "Previous",
                         tint = Color.White,
                         modifier = Modifier.size(34.dp)
@@ -1346,8 +1349,8 @@ if (videoStageActive) {
                     } else {
                         com.musicplayer.lytrix.ui.component.MorphingPlayPauseIcon(
                             isPlaying = isPlaying,
-                            playIcon = com.musicplayer.lytrix.ui.icons.MetrolistIcons.Rounded.PlayArrow,
-                            pauseIcon = com.musicplayer.lytrix.ui.icons.MetrolistIcons.Rounded.Pause,
+                            playIcon = com.musicplayer.lytrix.ui.icons.LytrixIcons.Rounded.PlayArrow,
+                            pauseIcon = com.musicplayer.lytrix.ui.icons.LytrixIcons.Rounded.Pause,
                             tint = Color.Black,
                             modifier = Modifier.size(playCircleSize * 0.56f)
                         )
@@ -1383,7 +1386,7 @@ if (videoStageActive) {
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
-                        imageVector = com.musicplayer.lytrix.ui.icons.MetrolistIcons.Rounded.SkipNext,
+                        imageVector = com.musicplayer.lytrix.ui.icons.LytrixIcons.Rounded.SkipNext,
                         contentDescription = "Next",
                         tint = Color.White,
                         modifier = Modifier.size(34.dp)
@@ -1402,8 +1405,8 @@ if (videoStageActive) {
                     contentAlignment = Alignment.Center
                 ) {
                     val repeatIcon = when (repeatMode) {
-                        Player.REPEAT_MODE_ONE -> com.musicplayer.lytrix.ui.icons.MetrolistIcons.Rounded.RepeatOne
-                        else -> com.musicplayer.lytrix.ui.icons.MetrolistIcons.Rounded.Repeat
+                        Player.REPEAT_MODE_ONE -> com.musicplayer.lytrix.ui.icons.LytrixIcons.Rounded.RepeatOne
+                        else -> com.musicplayer.lytrix.ui.icons.LytrixIcons.Rounded.Repeat
                     }
                     val repeatTint by animateColorAsState(
                         targetValue = if (repeatMode == Player.REPEAT_MODE_OFF) Color.White.copy(alpha = 0.45f) else effectiveAccent,

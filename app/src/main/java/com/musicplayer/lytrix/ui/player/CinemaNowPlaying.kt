@@ -409,7 +409,7 @@ fun CinemaNowPlayingFullScreen(
                             contentAlignment = Alignment.Center
                         ) {
                             Icon(
-                                imageVector = com.musicplayer.lytrix.ui.icons.MetrolistIcons.Rounded.Shuffle,
+                                imageVector = com.musicplayer.lytrix.ui.icons.LytrixIcons.Rounded.Shuffle,
                                 contentDescription = "Shuffle",
                                 tint = if (shuffleEnabled) palette.effectiveAccent else Color.White.copy(alpha = 0.58f),
                                 modifier = Modifier.size(20.dp)
@@ -417,7 +417,7 @@ fun CinemaNowPlayingFullScreen(
                         }
 
                         Icon(
-                            imageVector = com.musicplayer.lytrix.ui.icons.MetrolistIcons.Rounded.SkipPrevious,
+                            imageVector = com.musicplayer.lytrix.ui.icons.LytrixIcons.Rounded.SkipPrevious,
                             contentDescription = "Previous",
                             tint = Color.White,
                             modifier = Modifier
@@ -453,8 +453,8 @@ fun CinemaNowPlayingFullScreen(
                             } else {
                                 com.musicplayer.lytrix.ui.component.MorphingPlayPauseIcon(
                                     isPlaying = isPlaying,
-                                    playIcon = com.musicplayer.lytrix.ui.icons.MetrolistIcons.Rounded.PlayArrow,
-                                    pauseIcon = com.musicplayer.lytrix.ui.icons.MetrolistIcons.Rounded.Pause,
+                                    playIcon = com.musicplayer.lytrix.ui.icons.LytrixIcons.Rounded.PlayArrow,
+                                    pauseIcon = com.musicplayer.lytrix.ui.icons.LytrixIcons.Rounded.Pause,
                                     tint = Color.White,
                                     modifier = Modifier.size(playSize * 0.54f)
                                 )
@@ -462,7 +462,7 @@ fun CinemaNowPlayingFullScreen(
                         }
 
                         Icon(
-                            imageVector = com.musicplayer.lytrix.ui.icons.MetrolistIcons.Rounded.SkipNext,
+                            imageVector = com.musicplayer.lytrix.ui.icons.LytrixIcons.Rounded.SkipNext,
                             contentDescription = "Next",
                             tint = Color.White,
                             modifier = Modifier
@@ -493,7 +493,7 @@ fun CinemaNowPlayingFullScreen(
                             contentAlignment = Alignment.Center
                         ) {
                             Icon(
-                                imageVector = if (repeatMode == Player.REPEAT_MODE_ONE) com.musicplayer.lytrix.ui.icons.MetrolistIcons.Rounded.RepeatOne else com.musicplayer.lytrix.ui.icons.MetrolistIcons.Rounded.Repeat,
+                                imageVector = if (repeatMode == Player.REPEAT_MODE_ONE) com.musicplayer.lytrix.ui.icons.LytrixIcons.Rounded.RepeatOne else com.musicplayer.lytrix.ui.icons.LytrixIcons.Rounded.Repeat,
                                 contentDescription = "Repeat",
                                 tint = if (repeatMode != Player.REPEAT_MODE_OFF) palette.effectiveAccent else Color.White.copy(alpha = 0.58f),
                                 modifier = Modifier.size(20.dp)
@@ -1024,7 +1024,7 @@ private fun CinemaSleepTimerChip(
                 horizontalArrangement = Arrangement.spacedBy(4.dp),
             ) {
                 Icon(
-                    imageVector = com.musicplayer.lytrix.ui.icons.MetrolistIcons.Filled.Bedtime,
+                    imageVector = com.musicplayer.lytrix.ui.icons.LytrixIcons.Filled.Bedtime,
                     contentDescription = "Sleep Timer",
                     modifier = Modifier.size(14.dp),
                 )
@@ -1038,7 +1038,7 @@ private fun CinemaSleepTimerChip(
         }
     } else {
         CinemaChipIcon(
-            icon = com.musicplayer.lytrix.ui.icons.MetrolistIcons.Outlined.Bedtime,
+            icon = com.musicplayer.lytrix.ui.icons.LytrixIcons.Outlined.Bedtime,
             onClick = onClick,
         )
     }

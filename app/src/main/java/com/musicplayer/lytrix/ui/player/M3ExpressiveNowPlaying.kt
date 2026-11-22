@@ -593,7 +593,7 @@ fun M3ExpressiveNowPlayingFullScreen(
                             onClick = { showLyricsOverlay = true }
                         )
                         ExpressiveDockAction(
-                            icon = com.musicplayer.lytrix.ui.icons.MetrolistIcons.Outlined.Bedtime,
+                            icon = com.musicplayer.lytrix.ui.icons.LytrixIcons.Outlined.Bedtime,
                             active = sleepTimerState.isActive,
                             activeColor = expressiveScheme.primary,
                             inactiveColor = expressiveScheme.onSurfaceVariant,
@@ -739,8 +739,8 @@ fun M3ExpressiveNowPlayingFullScreen(
                     ) {
                         com.musicplayer.lytrix.ui.icons.MorphingMetroIcon(
                             selected = displayIsFavorite,
-                            outlinedIcon = com.musicplayer.lytrix.ui.icons.MetrolistIcons.Outlined.Star,
-                            filledIcon = com.musicplayer.lytrix.ui.icons.MetrolistIcons.Filled.Star,
+                            outlinedIcon = com.musicplayer.lytrix.ui.icons.LytrixIcons.Outlined.Star,
+                            filledIcon = com.musicplayer.lytrix.ui.icons.LytrixIcons.Filled.Star,
                             contentDescription = "Favorite",
                             tint = if (displayIsFavorite) expressiveScheme.onTertiaryContainer else expressiveScheme.onSurfaceVariant,
                             modifier = Modifier.size(btnSize * 0.54f)
@@ -1114,7 +1114,7 @@ fun M3ExpressiveNowPlayingFullScreen(
                             onClick = { showLyricsOverlay = true }
                         )
                         ExpressiveDockAction(
-                            icon = com.musicplayer.lytrix.ui.icons.MetrolistIcons.Outlined.Bedtime,
+                            icon = com.musicplayer.lytrix.ui.icons.LytrixIcons.Outlined.Bedtime,
                             active = sleepTimerState.isActive,
                             activeColor = expressiveScheme.primary,
                             inactiveColor = expressiveScheme.onSurfaceVariant,
@@ -1260,8 +1260,8 @@ fun M3ExpressiveNowPlayingFullScreen(
                     ) {
                         com.musicplayer.lytrix.ui.icons.MorphingMetroIcon(
                             selected = displayIsFavorite,
-                            outlinedIcon = com.musicplayer.lytrix.ui.icons.MetrolistIcons.Outlined.Star,
-                            filledIcon = com.musicplayer.lytrix.ui.icons.MetrolistIcons.Filled.Star,
+                            outlinedIcon = com.musicplayer.lytrix.ui.icons.LytrixIcons.Outlined.Star,
+                            filledIcon = com.musicplayer.lytrix.ui.icons.LytrixIcons.Filled.Star,
                             contentDescription = "Favorite",
                             tint = if (displayIsFavorite) expressiveScheme.onTertiaryContainer else expressiveScheme.onSurfaceVariant,
                             modifier = Modifier.size(btnSize * 0.54f)
@@ -1413,10 +1413,11 @@ fun M3ExpressiveNowPlayingFullScreen(
                             if (isVideoModeActive) {
                                 val idealHeight = screenWidth / videoAspect
                                 val boxHeight = minOf(idealHeight, totalViewportHeight * 0.44f)
+                                val videoFrameShape = RoundedCornerShape(8.dp)
                                 Box(
                                     modifier = Modifier
                                         .requiredSize(screenWidth, boxHeight)
-                                        .clip(RoundedCornerShape(artCorner))
+                                        .clip(videoFrameShape)
                                         .background(Color.Black)
                                 ) {
                                     NowPlayingMediaStage(
@@ -1431,7 +1432,7 @@ fun M3ExpressiveNowPlayingFullScreen(
                                         accentColor = expressiveScheme.primary,
                                         gesturesEnabled = gesturesEnabled,
                                         isGuest = isGuest,
-                                        shape = RoundedCornerShape(artCorner),
+                                        shape = videoFrameShape,
                                         onSeek = onSeek,
                                         onPlayPause = onPlayPause,
                                         onSkipNext = performSkipNext,

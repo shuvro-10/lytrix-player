@@ -33,7 +33,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.musicplayer.lytrix.ui.icons.MetrolistIcons
+import com.musicplayer.lytrix.ui.icons.LytrixIcons
 
 private fun formatABShortTime(ms: Long): String {
     val totalSec = (ms.coerceAtLeast(0L) / 1000L)
@@ -164,7 +164,7 @@ fun ABRepeatControlPill(
                     horizontalArrangement = Arrangement.spacedBy(6.dp),
                 ) {
                     Icon(
-                        imageVector = MetrolistIcons.Rounded.Repeat,
+                        imageVector = LytrixIcons.Rounded.Repeat,
                         contentDescription = "A-B Repeat Active",
                         tint = accentColor,
                         modifier = Modifier.size(14.dp),
@@ -216,7 +216,7 @@ fun ABRepeatControlPill(
                         contentAlignment = Alignment.Center,
                     ) {
                         Icon(
-                            imageVector = MetrolistIcons.Outlined.Close,
+                            imageVector = LytrixIcons.Outlined.Close,
                             contentDescription = "Clear A-B Repeat",
                             tint = Color.White.copy(alpha = 0.78f),
                             modifier = Modifier.size(14.dp),

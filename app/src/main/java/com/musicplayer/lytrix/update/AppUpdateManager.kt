@@ -66,15 +66,43 @@ data class GitHubRelease(
                         asset.name.endsWith(".apk", ignoreCase = true) &&
                         AppUpdateManager.BLOCKED_APK_MARKERS.none { marker -> asset.name.contains(marker, ignoreCase = true) }
                 }
+            if (candidates.isEmpty()) return null
+
+            val supportedAbis = Build.SUPPORTED_ABIS.toList()
+            val isArm64Supported = supportedAbis.any { it.contains("arm64", ignoreCase = true) }
+            val isArmv7Supported = supportedAbis.any { it.contains("armeabi", ignoreCase = true) || it.contains("armv7", ignoreCase = true) }
+
+            // 1. If device supports 64-bit ARM, match arm64 APK first
+            if (isArm64Supported) {
+                val arm64Apk = candidates.firstOrNull { asset ->
+                    asset.name.contains("arm64", ignoreCase = true) ||
+                        asset.name.contains("v8a", ignoreCase = true)
+                }
+                if (arm64Apk != null) return arm64Apk
+            }
+
+            // 2. If device is 32-bit ARM, match armv7a APK
+            if (isArmv7Supported && !isArm64Supported) {
+                val armv7Apk = candidates.firstOrNull { asset ->
+                    asset.name.contains("armeabi-v7a", ignoreCase = true) ||
+                        asset.name.contains("armv7", ignoreCase = true)
+                }
+                if (armv7Apk != null) return armv7Apk
+            }
+
+            // 3. Match Universal APK
+            val universalApk = candidates.firstOrNull { asset ->
+                asset.name.contains("universal", ignoreCase = true)
+            }
+            if (universalApk != null) return universalApk
+
+            // 4. Preferred standard names
             val preferredNames =
                 listOf(
                     "Lytrix-$version.apk",
-                    "Lytrix-$version-arm64-v8a.apk",
-                    "Lytrix-$version-universal.apk",
+                    "Lytrix-v$version.apk",
                     "lytrix-player-$version.apk",
                     "lytrix-$version.apk",
-                    "app-arm64-v8a-release.apk",
-                    "app-universal-release.apk",
                     "app-release.apk"
                 )
             return preferredNames.firstNotNullOfOrNull { preferred ->

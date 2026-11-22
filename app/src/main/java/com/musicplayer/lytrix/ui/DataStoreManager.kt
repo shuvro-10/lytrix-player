@@ -60,7 +60,7 @@ class DataStoreManager(private val context: Context) {
     val playerStyleFlow: Flow<String> = context.dataStore.data.map { prefs ->
         val saved = prefs[PLAYER_STYLE]
         if (!saved.isNullOrBlank()) {
-            if (saved == "SOUNDCLOUD") PLAYER_STYLE_MATERIAL3 else saved
+            if (saved == "SOUNDCLOUD" || saved == PLAYER_STYLE_CLASSIC) PLAYER_STYLE_MATERIAL3 else saved
         } else {
             val useNew = prefs[USE_NEW_PLAYER_DESIGN] ?: true
             if (useNew) PLAYER_STYLE_MATERIAL3 else PLAYER_STYLE_CLASSIC

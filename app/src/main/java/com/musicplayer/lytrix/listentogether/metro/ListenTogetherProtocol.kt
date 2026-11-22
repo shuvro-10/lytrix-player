@@ -4,7 +4,7 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.protobuf.ProtoNumber
 
 /**
- * Listen Together wire protocol models for Metrolist / Metroserver.
+ * Listen Together wire protocol models for Lytrix / Metroserver.
  * Uses kotlinx.serialization.protobuf for direct Kotlin data class serialization.
  */
 object MessageTypes {

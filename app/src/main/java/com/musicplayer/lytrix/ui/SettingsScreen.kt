@@ -617,7 +617,6 @@ fun PreferenceScreen(
                         Text("Now Playing design", fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onBackground)
                         val subtitle = when (playerStyle) {
                             DataStoreManager.PLAYER_STYLE_APPLE_MUSIC -> "Apple Music"
-                            DataStoreManager.PLAYER_STYLE_CLASSIC -> "Classic Player"
                             DataStoreManager.PLAYER_STYLE_M3_EXPRESSIVE -> "M3 Expressive (Wavy & Morph)"
                             DataStoreManager.PLAYER_STYLE_CINEMA -> "Immersive Cinema"
                             else -> "Material 3 (Default)"
@@ -693,9 +692,8 @@ fun PreferenceScreen(
             if (showPlayerStyleDialog) {
                 val options = listOf(
                     DataStoreManager.PLAYER_STYLE_MATERIAL3 to "Material 3 (Default)",
-                    DataStoreManager.PLAYER_STYLE_APPLE_MUSIC to "Apple Music",
-                    DataStoreManager.PLAYER_STYLE_CLASSIC to "Classic Player",
                     DataStoreManager.PLAYER_STYLE_M3_EXPRESSIVE to "M3 Expressive (Wavy & Morph)",
+                    DataStoreManager.PLAYER_STYLE_APPLE_MUSIC to "Apple Music",
                     DataStoreManager.PLAYER_STYLE_CINEMA to "Immersive Cinema"
                 )
                 AlertDialog(

@@ -985,7 +985,7 @@ fun OnlineMusicScreen(viewModel: PlayerViewModel, onClose: () -> Unit = {}, onNa
                         end = if (isLandscape) 16.dp else 8.dp
                     )
                 ) {
-                    Icon(imageVector = com.musicplayer.lytrix.ui.icons.MetrolistIcons.Rounded.Mic, contentDescription = "Recognize Music")
+                    Icon(imageVector = com.musicplayer.lytrix.ui.icons.LytrixIcons.Rounded.Mic, contentDescription = "Recognize Music")
                 }
             }
         },
@@ -4886,10 +4886,10 @@ fun OnlineMusicScreen(viewModel: PlayerViewModel, onClose: () -> Unit = {}, onNa
             ) {
                 val navHaptic = androidx.compose.ui.platform.LocalHapticFeedback.current
                 val tabs = listOf(
-                    Triple("HOME", Pair(com.musicplayer.lytrix.ui.icons.MetrolistIcons.Outlined.Home, com.musicplayer.lytrix.ui.icons.MetrolistIcons.Filled.Home), "Home"),
+                    Triple("HOME", Pair(com.musicplayer.lytrix.ui.icons.LytrixIcons.Outlined.Home, com.musicplayer.lytrix.ui.icons.LytrixIcons.Filled.Home), "Home"),
                     Triple("EXPLORE", Pair(Icons.Outlined.Explore, Icons.Filled.Explore), "Explore"),
-                    Triple("SEARCH", Pair(com.musicplayer.lytrix.ui.icons.MetrolistIcons.Outlined.Search, com.musicplayer.lytrix.ui.icons.MetrolistIcons.Filled.Search), "Search"),
-                    Triple("LIBRARY", Pair(com.musicplayer.lytrix.ui.icons.MetrolistIcons.Outlined.LibraryMusic, com.musicplayer.lytrix.ui.icons.MetrolistIcons.Filled.LibraryMusic), "Library")
+                    Triple("SEARCH", Pair(com.musicplayer.lytrix.ui.icons.LytrixIcons.Outlined.Search, com.musicplayer.lytrix.ui.icons.LytrixIcons.Filled.Search), "Search"),
+                    Triple("LIBRARY", Pair(com.musicplayer.lytrix.ui.icons.LytrixIcons.Outlined.LibraryMusic, com.musicplayer.lytrix.ui.icons.LytrixIcons.Filled.LibraryMusic), "Library")
                 )
                 tabs.forEach { (tabId, iconPair, label) ->
                     val isSelected = currentBottomTab == tabId
@@ -6051,10 +6051,10 @@ fun LytrixNavigationRail(
 ) {
     val railHaptic = androidx.compose.ui.platform.LocalHapticFeedback.current
     val tabs = listOf(
-        Triple("HOME", Pair(com.musicplayer.lytrix.ui.icons.MetrolistIcons.Outlined.Home, com.musicplayer.lytrix.ui.icons.MetrolistIcons.Filled.Home), "Home"),
+        Triple("HOME", Pair(com.musicplayer.lytrix.ui.icons.LytrixIcons.Outlined.Home, com.musicplayer.lytrix.ui.icons.LytrixIcons.Filled.Home), "Home"),
         Triple("EXPLORE", Pair(Icons.Outlined.Explore, Icons.Filled.Explore), "Explore"),
-        Triple("SEARCH", Pair(com.musicplayer.lytrix.ui.icons.MetrolistIcons.Outlined.Search, com.musicplayer.lytrix.ui.icons.MetrolistIcons.Filled.Search), "Search"),
-        Triple("LIBRARY", Pair(com.musicplayer.lytrix.ui.icons.MetrolistIcons.Outlined.LibraryMusic, com.musicplayer.lytrix.ui.icons.MetrolistIcons.Filled.LibraryMusic), "Library")
+        Triple("SEARCH", Pair(com.musicplayer.lytrix.ui.icons.LytrixIcons.Outlined.Search, com.musicplayer.lytrix.ui.icons.LytrixIcons.Filled.Search), "Search"),
+        Triple("LIBRARY", Pair(com.musicplayer.lytrix.ui.icons.LytrixIcons.Outlined.LibraryMusic, com.musicplayer.lytrix.ui.icons.LytrixIcons.Filled.LibraryMusic), "Library")
     )
     Column(
         modifier = modifier
@@ -6138,7 +6138,7 @@ fun LytrixTopAppBar(
                 },
                 shapes = IconButtonDefaults.shapes(),
             ) {
-                Icon(com.musicplayer.lytrix.ui.icons.MetrolistIcons.Outlined.History, contentDescription = "History", tint = MaterialTheme.colorScheme.onSurface)
+                Icon(com.musicplayer.lytrix.ui.icons.LytrixIcons.Outlined.History, contentDescription = "History", tint = MaterialTheme.colorScheme.onSurface)
             }
             IconButton(
                 onClick = {
@@ -6147,7 +6147,7 @@ fun LytrixTopAppBar(
                 },
                 shapes = IconButtonDefaults.shapes(),
             ) {
-                Icon(com.musicplayer.lytrix.ui.icons.MetrolistIcons.Outlined.AccountCircle, contentDescription = "Profile", tint = MaterialTheme.colorScheme.onSurface)
+                Icon(com.musicplayer.lytrix.ui.icons.LytrixIcons.Outlined.AccountCircle, contentDescription = "Profile", tint = MaterialTheme.colorScheme.onSurface)
             }
         }
     }
@@ -9793,7 +9793,7 @@ private fun YtSongMenuBody(
             LytrixBottomSheetListItem(icon = Icons.Default.Person, text = "Go to Artist", onClick = onGoToArtist)
             if (onViewAlbum != null) {
                 LytrixBottomSheetListItem(
-                    icon = com.musicplayer.lytrix.ui.icons.MetrolistIcons.Outlined.Album,
+                    icon = com.musicplayer.lytrix.ui.icons.LytrixIcons.Outlined.Album,
                     text = "View album",
                     onClick = onViewAlbum
                 )

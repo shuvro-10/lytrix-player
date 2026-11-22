@@ -26,7 +26,7 @@ import java.nio.charset.StandardCharsets
  * refreshes swap wholesale.
  */
 object PlayerConfigStore {
-    private const val TAG = "Metrolist_CipherConfig"
+    private const val TAG = "Lytrix_CipherConfig"
     private const val ASSET_NAME = "player_configs.json"
 
     /**

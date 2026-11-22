@@ -2419,7 +2419,7 @@ class PlayerViewModel : ViewModel() {
         return dao.getPlaylistCrossRefs(playlistId).map { crossRefs -> crossRefs.map { it.songId } }
     }
 
-    // Verbatim MetroList Tempo & Pitch + Sleep Timer state/controller
+    // Lytrix Tempo & Pitch + Sleep Timer state/controller
     var currentPlaybackSpeed = kotlinx.coroutines.flow.MutableStateFlow(1.0f)
     var currentPlaybackPitch = kotlinx.coroutines.flow.MutableStateFlow(1.0f)
     var currentPlaybackPitchSemitones = kotlinx.coroutines.flow.MutableStateFlow(0)
@@ -2509,7 +2509,7 @@ class PlayerViewModel : ViewModel() {
         val clampedPitch = pitch.coerceIn(0.5f, 2.0f)
         currentPlaybackPitch.value = clampedPitch
         currentPlaybackPitchSemitones.value = kotlin.math.round(
-            com.musicplayer.lytrix.ui.component.metroPlaybackPitchToSemitones(clampedPitch)
+            com.musicplayer.lytrix.ui.component.lytrixPlaybackPitchToSemitones(clampedPitch)
         ).toInt().coerceIn(-12, 12)
         if (immediate) {
             commitPlaybackParametersNow()
@@ -2523,7 +2523,7 @@ class PlayerViewModel : ViewModel() {
     fun setPlaybackPitchSemitones(semitones: Int) {
         val clamped = semitones.coerceIn(-12, 12)
         currentPlaybackPitchSemitones.value = clamped
-        currentPlaybackPitch.value = com.musicplayer.lytrix.ui.component.metroSemitonesToPlaybackPitch(clamped.toFloat())
+        currentPlaybackPitch.value = com.musicplayer.lytrix.ui.component.lytrixSemitonesToPlaybackPitch(clamped.toFloat())
         commitPlaybackParametersNow()
     }
 
@@ -2532,7 +2532,7 @@ class PlayerViewModel : ViewModel() {
         val clampedSemitones = semitones.coerceIn(-12, 12)
         currentPlaybackSpeed.value = clampedSpeed
         currentPlaybackPitchSemitones.value = clampedSemitones
-        currentPlaybackPitch.value = com.musicplayer.lytrix.ui.component.metroSemitonesToPlaybackPitch(clampedSemitones.toFloat())
+        currentPlaybackPitch.value = com.musicplayer.lytrix.ui.component.lytrixSemitonesToPlaybackPitch(clampedSemitones.toFloat())
         commitPlaybackParametersNow()
     }
 
@@ -5253,7 +5253,7 @@ class PlayerViewModel : ViewModel() {
                 val isSignedIn = com.musicplayer.lytrix.innertube.YouTube.hasLoginCookie() ||
                     !com.musicplayer.lytrix.innertube.YouTube.cookie.isNullOrBlank()
 
-                // ১. লোকাল হিস্ট্রি থেকে শুধু মিসিং পার্সোনালাইজড ব্যাকআপ (MetroList policy)
+                // ১. লোকাল হিস্ট্রি থেকে শুধু মিসিং পার্সোনালাইজড ব্যাকআপ (Lytrix policy)
                 val prefs = context.getSharedPreferences("yt_history_db", android.content.Context.MODE_PRIVATE)
                 val historyJson = prefs.getString("history_list", "[]") ?: "[]"
                 val jsonArray = org.json.JSONArray(historyJson)
@@ -7042,7 +7042,7 @@ class PlayerViewModel : ViewModel() {
         }
 
         // 🔥 1:1 ALBUM TRACK (Counterpart OMV with intro/dialogue):
-        // MetroList style: audio keeps playing, spinner on video button, instant swap when STATE_READY!
+        // Lytrix style: audio keeps playing, spinner on video button, instant swap when STATE_READY!
         timber.log.Timber.tag("VIDEO_LOAD").d("🎬 [1:1 HANDOFF_START] Initiating handoff for album track: '${song.title}' (${song.id})")
         handoffSongId = song.id
         _isVideoHandoffPending.value = true
@@ -8122,7 +8122,7 @@ class PlayerViewModel : ViewModel() {
             } else {
                 val currentAction = action ?: if (controller.playWhenReady) PlaybackActions.PLAY else PlaybackActions.PAUSE
                 // Deliberately empty trackId: server rejects play/pause/seek if trackId differs from held track ("stale_track");
-                // sending empty trackId makes the server use its held current track, matching SimpMusic/Metrolist protocol.
+                // sending empty trackId makes the server use its held current track, matching SimpMusic/Lytrix protocol.
                 metroManager.sendPlaybackAction(
                     action = currentAction,
                     trackId = "",

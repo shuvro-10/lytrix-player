@@ -117,9 +117,9 @@ fun PlayerBottomSheetController(
         }
     } else null
 
-    // Verbatim MetroList Sleep Timer Dialog (rendered directly as a dialog, not inside a bottom sheet)
+    // Lytrix Sleep Timer Dialog (rendered directly as a dialog, not inside a bottom sheet)
     if (sheetType == BottomSheetType.SLEEP_TIMER) {
-        com.musicplayer.lytrix.ui.component.MetroSleepTimerDialog(
+        com.musicplayer.lytrix.ui.component.LytrixSleepTimerDialog(
             state = sleepTimerState,
             onDismiss = onDismiss,
             onStart = { durationMs, fadeOut, finishCurrentSong ->
@@ -202,7 +202,7 @@ fun PlayerBottomSheetController(
             )
             BottomSheetType.PLAYLIST -> PlaylistSelectionSheet(playlists = playlists, onAddToPlaylist = { onAddToPlaylist(it); onDismiss() }, onCreatePlaylist = onCreatePlaylist)
             BottomSheetType.SLEEP_TIMER -> Unit
-            BottomSheetType.SPEED -> com.musicplayer.lytrix.ui.component.MetroTempoPitchControls(
+            BottomSheetType.SPEED -> com.musicplayer.lytrix.ui.component.LytrixTempoPitchControls(
                 speed = currentSpeed,
                 pitch = currentPitch,
                 onSpeedChange = { viewModel.setPlaybackSpeed(it, immediate = false) },
@@ -466,7 +466,7 @@ fun OnlineSongMenu(
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 MeldTopActionChip(
                     modifier = Modifier.weight(1f),
-                    icon = if (isPodcastOrAudiobook) (if (isSavedForLater) Icons.Default.Bookmark else Icons.Outlined.BookmarkBorder) else com.musicplayer.lytrix.ui.icons.MetrolistIcons.AutoMirrored.Filled.PlaylistAdd,
+                    icon = if (isPodcastOrAudiobook) (if (isSavedForLater) Icons.Default.Bookmark else Icons.Outlined.BookmarkBorder) else com.musicplayer.lytrix.ui.icons.LytrixIcons.AutoMirrored.Filled.PlaylistAdd,
                     text = if (isPodcastOrAudiobook) (if (isSavedForLater) "Saved" else "Save Later") else "Add to playlist"
                 ) {
                     if (isPodcastOrAudiobook) {
@@ -497,11 +497,11 @@ fun OnlineSongMenu(
                         onNavigate(BottomSheetType.PLAYLIST)
                     }
                 }
-                MeldTopActionChip(modifier = Modifier.weight(1f), icon = com.musicplayer.lytrix.ui.icons.MetrolistIcons.Outlined.Share, text = "Share") {
+                MeldTopActionChip(modifier = Modifier.weight(1f), icon = com.musicplayer.lytrix.ui.icons.LytrixIcons.Outlined.Share, text = "Share") {
                     onDismiss()
                     shareOnlineSong(context, song, isPodcast, isJioSaavn)
                 }
-                MeldTopActionChip(modifier = Modifier.weight(1f), icon = com.musicplayer.lytrix.ui.icons.MetrolistIcons.Outlined.Info, text = "Details") { onNavigate(BottomSheetType.DETAILS) }
+                MeldTopActionChip(modifier = Modifier.weight(1f), icon = com.musicplayer.lytrix.ui.icons.LytrixIcons.Outlined.Info, text = "Details") { onNavigate(BottomSheetType.DETAILS) }
             }
         }
 
@@ -519,7 +519,7 @@ fun OnlineSongMenu(
                     else -> "Unknown Artist"
                 }
                 MeldMenuItem(
-                    icon = com.musicplayer.lytrix.ui.icons.MetrolistIcons.Outlined.Person,
+                    icon = com.musicplayer.lytrix.ui.icons.LytrixIcons.Outlined.Person,
                     title = channelOrAuthorTitle,
                     subtitle = channelOrAuthorSubtitle
                 ) {
@@ -561,7 +561,7 @@ fun OnlineSongMenu(
                         }
                         ?: "Album details"
                     MeldMenuItem(
-                        icon = com.musicplayer.lytrix.ui.icons.MetrolistIcons.Outlined.Album,
+                        icon = com.musicplayer.lytrix.ui.icons.LytrixIcons.Outlined.Album,
                         title = "View album",
                         subtitle = albumSubtitle
                     ) {
@@ -572,7 +572,7 @@ fun OnlineSongMenu(
 
                 if (!isRadioStream) {
                     if (isDownloadedLocally) {
-                        MeldMenuItem(icon = com.musicplayer.lytrix.ui.icons.MetrolistIcons.Outlined.Delete, title = "Remove from device", subtitle = "Delete downloaded file") {
+                        MeldMenuItem(icon = com.musicplayer.lytrix.ui.icons.LytrixIcons.Outlined.Delete, title = "Remove from device", subtitle = "Delete downloaded file") {
                             onDismiss()
                             if (file.exists()) file.delete()
                             com.musicplayer.lytrix.playback.OkHttpDownloader.deleteSongFiles(context, song?.title ?: "")
@@ -580,10 +580,10 @@ fun OnlineSongMenu(
                             isDownloadedLocally = false
                             android.widget.Toast.makeText(context, "Removed from device", android.widget.Toast.LENGTH_SHORT).show()
                         }
-                        MeldMenuItem(icon = com.musicplayer.lytrix.ui.icons.MetrolistIcons.Outlined.CloudUpload, title = "Play Online", subtitle = "Stream with lyrics & video") {
+                        MeldMenuItem(icon = com.musicplayer.lytrix.ui.icons.LytrixIcons.Outlined.CloudUpload, title = "Play Online", subtitle = "Stream with lyrics & video") {
                             onPlayOnline()
                         }
-                        MeldMenuItem(icon = com.musicplayer.lytrix.ui.icons.MetrolistIcons.Outlined.Download, title = "Save to Storage 👑", subtitle = "Export to public Music folder") {
+                        MeldMenuItem(icon = com.musicplayer.lytrix.ui.icons.LytrixIcons.Outlined.Download, title = "Save to Storage 👑", subtitle = "Export to public Music folder") {
                             onDismiss()
                             if (!isUserPremium(context)) {
                                 android.widget.Toast.makeText(context, "👑 Save to Storage is exclusive to Lytrix Premium users!", android.widget.Toast.LENGTH_LONG).show()
@@ -698,7 +698,7 @@ fun OnlineSongMenu(
         item {
             MeldMenuGroup {
                 MeldMenuItem(icon = TablerIcons.Dashboard, title = "Tempo & Pitch") { onNavigate(BottomSheetType.SPEED) }
-                MeldMenuItem(icon = com.musicplayer.lytrix.ui.icons.MetrolistIcons.Outlined.Bedtime, title = "Sleep timer", subtitle = sleepTimerSubtitle) { onNavigate(BottomSheetType.SLEEP_TIMER) }
+                MeldMenuItem(icon = com.musicplayer.lytrix.ui.icons.LytrixIcons.Outlined.Bedtime, title = "Sleep timer", subtitle = sleepTimerSubtitle) { onNavigate(BottomSheetType.SLEEP_TIMER) }
                 MeldMenuItem(icon = TablerIcons.Repeat, title = "A-B Repeat") { onNavigate(BottomSheetType.AB_SELECT) }
                 MeldMenuItem(icon = TablerIcons.BatteryAutomotive, title = "Always-On Display", subtitle = "AMOLED clock & battery saver") { onPowerSavingMode(); onDismiss() }
                 MeldMenuItem(icon = TablerIcons.Lock, title = "Pocket Touch Lock", subtitle = "Prevent accidental pocket touches") {
@@ -770,7 +770,7 @@ fun LocalSongMenu(
         item {
             MeldMenuGroup {
                 MeldMenuItem(icon = TablerIcons.Dashboard, title = "Tempo & Pitch") { onNavigate(BottomSheetType.SPEED) }
-                MeldMenuItem(icon = com.musicplayer.lytrix.ui.icons.MetrolistIcons.Outlined.Bedtime, title = "Sleep timer", subtitle = sleepTimerSubtitle) { onNavigate(BottomSheetType.SLEEP_TIMER) }
+                MeldMenuItem(icon = com.musicplayer.lytrix.ui.icons.LytrixIcons.Outlined.Bedtime, title = "Sleep timer", subtitle = sleepTimerSubtitle) { onNavigate(BottomSheetType.SLEEP_TIMER) }
                 MeldMenuItem(icon = TablerIcons.Repeat, title = "A-B Repeat") { onNavigate(BottomSheetType.AB_SELECT) }
                 MeldMenuItem(icon = TablerIcons.Photo, title = "Custom Cover Art") { onChangeCoverArt() }
                 MeldMenuItem(icon = TablerIcons.BatteryAutomotive, title = "Always-On Display", subtitle = "AMOLED clock & battery saver") { onPowerSavingMode(); onDismiss() }
@@ -1004,7 +1004,7 @@ fun MeldDetailsScreen(
 
                     if (!song.album.isNullOrBlank() && song.album != "Unknown Album") {
                         val albumLabel = if (isAudiobook) "Audiobook" else if (isPodcast) "Podcast show" else "Album"
-                        MeldMenuItem(icon = com.musicplayer.lytrix.ui.icons.MetrolistIcons.Outlined.Album, title = albumLabel, subtitle = song.album) { copyToClipboard(song.album) }
+                        MeldMenuItem(icon = com.musicplayer.lytrix.ui.icons.LytrixIcons.Outlined.Album, title = albumLabel, subtitle = song.album) { copyToClipboard(song.album) }
                     }
 
                     MeldMenuItem(icon = TablerIcons.Bookmark, title = "Media id", subtitle = song.originalId ?: song.id.toString()) { copyToClipboard(song.originalId ?: song.id.toString()) }

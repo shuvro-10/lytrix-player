@@ -81,9 +81,9 @@ import com.musicplayer.lytrix.playback.SleepTimerPrefsStore
 import com.musicplayer.lytrix.playback.SleepTimerState
 import com.musicplayer.lytrix.playback.formatSleepTimerRemaining
 import com.musicplayer.lytrix.playback.sleepTimerDurationMs
-import com.musicplayer.lytrix.ui.icons.MetrolistIcons
+import com.musicplayer.lytrix.ui.icons.LytrixIcons
 
-private fun metroSegmentedGroupShape(
+private fun lytrixSegmentedGroupShape(
     first: Boolean,
     last: Boolean,
     pressed: Boolean,
@@ -101,10 +101,10 @@ private fun metroSegmentedGroupShape(
 }
 
 /**
- * Verbatim Material 3 Expressive port of MetroList's SleepTimerDialog.kt.
+ * Verbatim Material 3 Expressive port of Lytrix's SleepTimerDialog.kt.
  */
 @Composable
-fun MetroSleepTimerDialog(
+fun LytrixSleepTimerDialog(
     state: SleepTimerState,
     onDismiss: () -> Unit,
     onStart: (durationMs: Long, fadeOut: Boolean, finishCurrentSong: Boolean) -> Unit,
@@ -151,7 +151,7 @@ fun MetroSleepTimerDialog(
                         verticalArrangement = Arrangement.spacedBy(20.dp),
                     ) {
                         Icon(
-                            MetrolistIcons.Outlined.Bedtime,
+                            LytrixIcons.Outlined.Bedtime,
                             contentDescription = null,
                             tint = AlertDialogDefaults.iconContentColor,
                         )
@@ -196,7 +196,7 @@ fun MetroSleepTimerDialog(
                                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                                     verticalAlignment = Alignment.Top,
                                 ) {
-                                    MetroDurationField(
+                                    LytrixDurationField(
                                         value = hours,
                                         onValueChange = { hours = it },
                                         label = "Hour",
@@ -208,7 +208,7 @@ fun MetroSleepTimerDialog(
                                         modifier = Modifier.padding(top = 12.dp),
                                         style = MaterialTheme.typography.displayMedium,
                                     )
-                                    MetroDurationField(
+                                    LytrixDurationField(
                                         value = minutes,
                                         onValueChange = { minutes = it },
                                         label = "Minute",
@@ -230,7 +230,7 @@ fun MetroSleepTimerDialog(
                                 }
                                 Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                                     Surface(
-                                        shape = metroSegmentedGroupShape(first = true, last = !expanded, pressed = false),
+                                        shape = lytrixSegmentedGroupShape(first = true, last = !expanded, pressed = false),
                                         color = MaterialTheme.colorScheme.surfaceContainerLowest,
                                     ) {
                                         Row(
@@ -254,7 +254,7 @@ fun MetroSleepTimerDialog(
                                                 shapes = IconButtonDefaults.shapes(),
                                             ) {
                                                 Icon(
-                                                    MetrolistIcons.Outlined.KeyboardArrowDown,
+                                                    LytrixIcons.Outlined.KeyboardArrowDown,
                                                     contentDescription = if (expanded) "Collapse" else "Expand",
                                                     modifier = Modifier.rotate(rotation),
                                                 )
@@ -269,14 +269,14 @@ fun MetroSleepTimerDialog(
                                             fadeOut(MaterialTheme.motionScheme.fastEffectsSpec()),
                                     ) {
                                         Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                                            MetroTimerCheckboxRow(
+                                            LytrixTimerCheckboxRow(
                                                 text = "Finish current song",
                                                 checked = finishCurrentSong,
                                                 enabled = allowEndOfSong,
                                                 last = false,
                                                 onCheckedChange = { finishCurrentSong = it },
                                             )
-                                            MetroTimerCheckboxRow(
+                                            LytrixTimerCheckboxRow(
                                                 text = "Fade out",
                                                 checked = fadeOut,
                                                 last = true,
@@ -364,7 +364,7 @@ fun MetroSleepTimerDialog(
 }
 
 @Composable
-private fun MetroDurationField(
+private fun LytrixDurationField(
     value: String,
     onValueChange: (String) -> Unit,
     label: String,
@@ -421,7 +421,7 @@ private fun MetroDurationField(
 }
 
 @Composable
-private fun MetroTimerCheckboxRow(
+private fun LytrixTimerCheckboxRow(
     text: String,
     checked: Boolean,
     last: Boolean,
@@ -431,7 +431,7 @@ private fun MetroTimerCheckboxRow(
     val interactionSource = remember { MutableInteractionSource() }
     val pressed by interactionSource.collectIsPressedAsState()
     Surface(
-        shape = metroSegmentedGroupShape(first = false, last = last, pressed = pressed),
+        shape = lytrixSegmentedGroupShape(first = false, last = last, pressed = pressed),
         color = MaterialTheme.colorScheme.surfaceContainerLowest,
     ) {
         Row(
