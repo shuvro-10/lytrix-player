@@ -976,8 +976,6 @@ class MainActivity : ComponentActivity() {
 
                             val isListenTogetherRoute = currentRoute?.startsWith("listen_together") == true
 
-                            val isCinemaActive by playerViewModel.isCinemaActive.collectAsState()
-
                             val configuration = androidx.compose.ui.platform.LocalConfiguration.current
 
                             val isLandscape = configuration.orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE
@@ -986,7 +984,7 @@ class MainActivity : ComponentActivity() {
 
                             AnimatedVisibility(
 
-                                visible = currentSong != null && !isNowPlayingExpanded && !isSettingsRoute && !isListenTogetherRoute && videoToPlay == null && !isPowerSavingMode && !isCinemaActive,
+                                visible = currentSong != null && !isNowPlayingExpanded && !isSettingsRoute && !isListenTogetherRoute && videoToPlay == null && !isPowerSavingMode,
 
                                 enter = slideInVertically(
 
@@ -2844,7 +2842,7 @@ class MainActivity : ComponentActivity() {
 
                     val isLandscapeForSnack = configForSnack.orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE
 
-                    val isMiniPlayerVisibleForSnack = curSongForSnack != null && !isNowPlayingExpanded && !isSettingsRouteForSnack && !isListenTogetherRouteForSnack && videoToPlay == null && !isPowerSavingMode && !playerViewModel.isCinemaActive.value
+                    val isMiniPlayerVisibleForSnack = curSongForSnack != null && !isNowPlayingExpanded && !isSettingsRouteForSnack && !isListenTogetherRouteForSnack && videoToPlay == null && !isPowerSavingMode
 
                     val snackbarBottomPadding = if (isNowPlayingExpanded) {
 

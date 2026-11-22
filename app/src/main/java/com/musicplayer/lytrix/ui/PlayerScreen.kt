@@ -303,26 +303,16 @@ fun PlayerScreen(onNavigateToOnlineSettings: () -> Unit = {},
     var isSearchExpanded by remember { mutableStateOf(false) }
     var showAdFreeSheet by remember { mutableStateOf(false) }
 
-    val cinemaRepository = remember { com.musicplayer.lytrix.ui.cinema.TmdbCinemaRepository() }
-    val cinemaStreamResolver = remember { com.musicplayer.lytrix.ui.cinema.MultiServerStreamResolver() }
+    val tabs = listOf("Discover", "Videos", getString("songs"), getString("playlists"), getString("folders"), getString("artists"), getString("albums"))
+    val pagerState = androidx.compose.foundation.pager.rememberPagerState(initialPage = 2, pageCount = { tabs.size })
 
-    val tabs = listOf("Cinema", "Discover", "Videos", getString("songs"), getString("playlists"), getString("folders"), getString("artists"), getString("albums"))
-    val pagerState = androidx.compose.foundation.pager.rememberPagerState(initialPage = 3, pageCount = { tabs.size })
-    LaunchedEffect(pagerState.currentPage) {
-        viewModel.setCinemaActive(pagerState.currentPage == 0)
-    }
-    DisposableEffect(Unit) {
-        onDispose {
-            viewModel.setCinemaActive(false)
-        }
-    }
     val pendingRecognitionLaunch by viewModel.pendingRecognitionLaunch.collectAsState()
     LaunchedEffect(pendingRecognitionLaunch) {
         if (pendingRecognitionLaunch) {
             isNowPlayingExpanded = false
             isSearchExpanded = false
-            if (pagerState.currentPage != 1) {
-                pagerState.scrollToPage(1)
+            if (pagerState.currentPage != 0) {
+                pagerState.scrollToPage(0)
             }
         }
     }
@@ -629,7 +619,6 @@ fun PlayerScreen(onNavigateToOnlineSettings: () -> Unit = {},
                             }
 
                             val tabItems = listOf(
-                                Triple("Cinema", Icons.Outlined.Movie, Icons.Filled.Movie),
                                 Triple("Discover", com.musicplayer.lytrix.ui.icons.MetrolistIcons.Outlined.Home, com.musicplayer.lytrix.ui.icons.MetrolistIcons.Filled.Home),
                                 Triple("Videos", com.musicplayer.lytrix.ui.icons.MetrolistIcons.Outlined.SmartDisplay, com.musicplayer.lytrix.ui.icons.MetrolistIcons.Filled.SmartDisplay),
                                 Triple(getString("songs"), com.musicplayer.lytrix.ui.icons.MetrolistIcons.Outlined.MusicNote, com.musicplayer.lytrix.ui.icons.MetrolistIcons.Filled.MusicNote),
@@ -734,23 +723,15 @@ fun PlayerScreen(onNavigateToOnlineSettings: () -> Unit = {},
                         androidx.compose.foundation.pager.HorizontalPager(
                             state = pagerState,
                             modifier = Modifier.fillMaxSize(),
-                            userScrollEnabled = pagerState.currentPage > 1
+                            userScrollEnabled = pagerState.currentPage > 0
                         ) { page ->
                             when (page) {
                                 0 -> {
-                                    // 🔥 CINEMA HUB (MOVIES & SERIES) - Fullscreen Edge-to-Edge
-                                    com.musicplayer.lytrix.ui.cinema.CinemaScreen(
-                                        repository = cinemaRepository,
-                                        streamResolver = cinemaStreamResolver,
-                                        onExit = { scope.launch { pagerState.animateScrollToPage(3) } }
-                                    )
-                                }
-                                1 -> {
                                     // 🔥 ONLINE HUB (DISCOVER) - Completely Unlocked
                                     Box(modifier = Modifier.fillMaxSize()) {
                                         OnlineMusicScreen(
                                             viewModel = viewModel,
-                                            onClose = { scope.launch { pagerState.animateScrollToPage(3) } },
+                                            onClose = { scope.launch { pagerState.animateScrollToPage(2) } },
                                             onNavigateToArtist = onNavigateToArtist,
                                             onNavigateToListenTogether = onNavigateToListenTogether,
                                             onNavigateToFriends = onNavigateToFriends,
@@ -759,12 +740,12 @@ fun PlayerScreen(onNavigateToOnlineSettings: () -> Unit = {},
                                         )
                                     }
                                 }
-                                2 -> VideosScreen(
+                                1 -> VideosScreen(
                                     onNavigateToSettings = onNavigateToSettings, searchQuery = searchQuery, playerViewModel = viewModel, sortOption = sortOption,
                                     onPlayVideo = { video -> if (isPlaying) { viewModel.playPause() }; onPlayVideo(video) },
                                     currentTheme = currentPremiumTheme, themeFont = themeFont
                                 )
-                                3 -> SongsTabContent(
+                                2 -> SongsTabContent(
                                     filteredSongs = filteredSongs, currentSong = currentSong, isPlaying = isPlaying, accentColor = accentColor, isLoading = isLoading,
                                     onSongClick = { viewModel.playSong(it) },
                                     onRenameClick = { id -> showRenameDialog = id; val song = filteredSongs.find { it.id == id }; renameText = song?.title ?: "" },
@@ -777,7 +758,7 @@ fun PlayerScreen(onNavigateToOnlineSettings: () -> Unit = {},
                                     },
                                     currentTheme = currentPremiumTheme, themeFont = themeFont
                                 )
-                                4 -> {
+                                3 -> {
                                     val songIdSet = remember(songsList) { songsList.map { it.id }.toHashSet() }
                                     val actualFavCount = remember(favoriteSongIds, songIdSet) { favoriteSongIds.distinct().count { songIdSet.contains(it) } }
                                     val actualRecentCount = remember(recentSongIds, songIdSet) { recentSongIds.distinct().count { songIdSet.contains(it) } }
@@ -800,7 +781,7 @@ fun PlayerScreen(onNavigateToOnlineSettings: () -> Unit = {},
                                         onAddNewClick = { showCreateOfflinePlaylistDialog = true }
                                     )
                                 }
-                                5 -> FoldersTabContent(
+                                4 -> FoldersTabContent(
                                     folders = viewModel.groupedFolders.collectAsState().value,
                                     currentSong = currentSong,
                                     isPlaying = isPlaying,
@@ -809,10 +790,10 @@ fun PlayerScreen(onNavigateToOnlineSettings: () -> Unit = {},
                                     themeFont = themeFont,
                                     onSongClick = { song, list -> viewModel.playSong(song, list) }
                                 )
-                                6 -> ArtistsTabContent(
+                                5 -> ArtistsTabContent(
                                     artists = groupedArtists, onArtistClick = { onNavigateToPlaylist("artist", it) }, currentTheme = currentPremiumTheme, themeFont = themeFont
                                 )
-                                7 -> AlbumsTabContent(
+                                6 -> AlbumsTabContent(
                                     albums = groupedAlbums, onAlbumClick = { onNavigateToPlaylist("album", it) }, currentTheme = currentPremiumTheme, themeFont = themeFont
                                 )
                                 else -> { EmptyStateView() }

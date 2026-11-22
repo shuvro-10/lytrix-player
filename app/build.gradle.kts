@@ -66,11 +66,6 @@ android {
     sourceCompatibility = JavaVersion.VERSION_11
     targetCompatibility = JavaVersion.VERSION_11
   }
-  packaging {
-    jniLibs {
-      excludes += "**/libtorrent4j.so"
-    }
-  }
 
   buildFeatures {
     compose = true
@@ -107,10 +102,6 @@ dependencies {
   implementation(libs.coil.compose)
   implementation(libs.coil.video)
   implementation("io.coil-kt:coil-compose:2.4.0")
-  implementation("org.libtorrent4j:libtorrent4j:2.1.0-35")
-  implementation("org.libtorrent4j:libtorrent4j-android-arm64:2.1.0-35")
-  implementation("org.libtorrent4j:libtorrent4j-android-arm:2.1.0-35")
-  implementation("org.nanohttpd:nanohttpd:2.3.1")
   implementation("org.jellyfin.media3:media3-ffmpeg-decoder:1.6.1+1")
   implementation(libs.androidx.media3.exoplayer)
   implementation(libs.androidx.media3.session)

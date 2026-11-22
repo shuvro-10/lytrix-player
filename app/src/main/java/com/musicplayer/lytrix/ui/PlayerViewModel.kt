@@ -146,12 +146,6 @@ class PlayerViewModel : ViewModel() {
 
     private val _songsList = MutableStateFlow<List<Song>>(emptyList())
     val songsList: StateFlow<List<Song>> = _songsList.asStateFlow()
-    private val _isCinemaActive = MutableStateFlow(false)
-    val isCinemaActive: StateFlow<Boolean> = _isCinemaActive.asStateFlow()
-
-    fun setCinemaActive(active: Boolean) {
-        _isCinemaActive.value = active
-    }
     private val _accountPlaylists = MutableStateFlow<List<YtMusicTrack>?>(null)
     val accountPlaylists = _accountPlaylists.asStateFlow()
     private val _speedDialItems = MutableStateFlow<List<YtMusicTrack>>(emptyList())
