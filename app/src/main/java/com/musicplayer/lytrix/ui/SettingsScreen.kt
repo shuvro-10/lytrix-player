@@ -83,8 +83,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material3.TabRow
 import androidx.compose.material3.TabRowDefaults
 import com.musicplayer.lytrix.BuildConfig
-import com.musicplayer.lytrix.utils.AppUpdateInfo
-import com.musicplayer.lytrix.utils.AppUpdateManager
+import com.musicplayer.lytrix.ui.screens.settings.UpdatesScreen
+import com.musicplayer.lytrix.ui.screens.settings.UpdateDetailsScreen
 
 enum class LayoutMode { LIST, GRID_2, GRID_3 }
 
@@ -189,6 +189,17 @@ fun SettingsNavGraph(
                 onNavigateBack = { navController.popBackStack() }
             )
         }
+        composable("settings_updates") {
+            UpdatesScreen(
+                onNavigateBack = { navController.popBackStack() },
+                onOpenDetails = { navController.navigate("settings_update_details") }
+            )
+        }
+        composable("settings_update_details") {
+            UpdateDetailsScreen(
+                onNavigateBack = { navController.popBackStack() }
+            )
+        }
     }
 }
 
@@ -225,50 +236,6 @@ fun SettingsMainScreen(
     var showAdFreeDialog by remember { mutableStateOf(false) }
 
     val coroutineScope = rememberCoroutineScope()
-    var isCheckingUpdate by remember { mutableStateOf(false) }
-    var updateInfoState by remember { mutableStateOf<AppUpdateInfo?>(AppUpdateManager.cachedUpdateInfo) }
-    var hasUpdateState by remember {
-        mutableStateOf(AppUpdateManager.cachedUpdateInfo?.let { AppUpdateManager.isUpdateAvailable(it.versionName) } ?: false)
-    }
-    var updateCheckMessage by remember { mutableStateOf<String?>(null) }
-    var showUpdateDialog by remember { mutableStateOf(false) }
-
-    LaunchedEffect(Unit) {
-        val result = AppUpdateManager.checkForUpdate(forceRefresh = false)
-        result.onSuccess { (info, hasUpdate) ->
-            updateInfoState = info
-            hasUpdateState = hasUpdate
-        }
-    }
-
-    fun checkUpdatesManually() {
-        if (isCheckingUpdate) return
-        isCheckingUpdate = true
-        updateCheckMessage = null
-        coroutineScope.launch {
-            val startTime = System.currentTimeMillis()
-            val result = AppUpdateManager.checkForUpdate(forceRefresh = true)
-            val elapsed = System.currentTimeMillis() - startTime
-            if (elapsed < 800) {
-                delay(800 - elapsed)
-            }
-            isCheckingUpdate = false
-            result.onSuccess { (info, hasUpdate) ->
-                updateInfoState = info
-                hasUpdateState = hasUpdate
-                if (hasUpdate && info != null) {
-                    showUpdateDialog = true
-                } else {
-                    updateCheckMessage = "Up to date"
-                    Toast.makeText(context, "You are using the latest version (v${BuildConfig.VERSION_NAME})", Toast.LENGTH_SHORT).show()
-                }
-            }.onFailure { err ->
-                updateCheckMessage = "Check failed"
-                Toast.makeText(context, "Could not check for updates: ${err.message}", Toast.LENGTH_SHORT).show()
-            }
-        }
-    }
-
     val dataStoreManager = remember { DataStoreManager(context) }
     val isPremiumActive by dataStoreManager.isPremiumFlow.collectAsState(initial = false)
     val expiryTime by dataStoreManager.subscriptionExpiryFlow.collectAsState(initial = 0L)
@@ -400,18 +367,12 @@ fun SettingsMainScreen(
                 SettingsCardGroup(cardBgColor) {
                     PremiumSettingsItem(icon = TablerIcons.Message, title = "Feedback", value = "", onClick = { navController.navigate("settings_feedback") })
                     HorizontalDivider(color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.1f), modifier = Modifier.padding(horizontal = 16.dp))
-                    SoftwareUpdateSettingsItem(
-                        isChecking = isCheckingUpdate,
-                        hasUpdate = hasUpdateState,
-                        updateInfo = updateInfoState,
-                        currentVersion = BuildConfig.VERSION_NAME,
-                        statusMessage = updateCheckMessage,
+                    PremiumSettingsItem(
+                        icon = TablerIcons.Refresh,
+                        title = "Updates",
+                        value = "v${BuildConfig.VERSION_NAME}",
                         onClick = {
-                            if (hasUpdateState && updateInfoState != null) {
-                                showUpdateDialog = true
-                            } else {
-                                checkUpdatesManually()
-                            }
+                            navController.navigate("settings_updates")
                         }
                     )
                     HorizontalDivider(color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.1f), modifier = Modifier.padding(horizontal = 16.dp))
@@ -445,13 +406,6 @@ fun SettingsMainScreen(
                 isAdFreeState = com.musicplayer.lytrix.ui.AdManager.isAdFree(context)
                 showPremiumDialog = true
             }
-        )
-    }
-
-    if (showUpdateDialog && updateInfoState != null) {
-        AppUpdateDialog(
-            updateInfo = updateInfoState!!,
-            onDismiss = { showUpdateDialog = false }
         )
     }
 }
@@ -526,131 +480,7 @@ fun PremiumSettingsItem(icon: ImageVector, title: String, value: String, isPremi
     }
 }
 
-@Composable
-fun SoftwareUpdateSettingsItem(
-    isChecking: Boolean,
-    hasUpdate: Boolean,
-    updateInfo: AppUpdateInfo?,
-    currentVersion: String,
-    statusMessage: String? = null,
-    onClick: () -> Unit
-) {
-    val accentColor = com.musicplayer.lytrix.ui.theme.LocalAccentColor.current
-    val isLightMode = MaterialTheme.colorScheme.background.luminance() > 0.5f
-    val defaultIconColor = if (isLightMode) Color.Black.copy(alpha = 0.65f) else Color.White.copy(alpha = 0.7f)
 
-    if (isChecking) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 18.dp, horizontal = 20.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Box(
-                modifier = Modifier
-                    .size(24.dp)
-                    .clip(CircleShape)
-                    .shimmer()
-            )
-            Spacer(modifier = Modifier.width(16.dp))
-            Column(modifier = Modifier.weight(1f)) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth(0.5f)
-                        .height(16.dp)
-                        .clip(RoundedCornerShape(6.dp))
-                        .shimmer()
-                )
-                Spacer(modifier = Modifier.height(6.dp))
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth(0.35f)
-                        .height(12.dp)
-                        .clip(RoundedCornerShape(4.dp))
-                        .shimmer()
-                )
-            }
-        }
-    } else {
-        val icon = if (hasUpdate) TablerIcons.CloudDownload else TablerIcons.Refresh
-        val iconTint = if (hasUpdate) accentColor else defaultIconColor
-        val textColor = if (hasUpdate) accentColor else MaterialTheme.colorScheme.onBackground
-
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clickable(onClick = onClick)
-                .padding(vertical = 18.dp, horizontal = 20.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.weight(1.3f)
-            ) {
-                Icon(
-                    imageVector = icon,
-                    contentDescription = null,
-                    tint = iconTint,
-                    modifier = Modifier.size(24.dp)
-                )
-                Spacer(modifier = Modifier.width(16.dp))
-                Text(
-                    text = if (hasUpdate) "Update Available" else "Check for updates",
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    color = textColor,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
-            }
-
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.weight(1.2f),
-                horizontalArrangement = Arrangement.End
-            ) {
-                if (hasUpdate && updateInfo != null) {
-                    Surface(
-                        shape = RoundedCornerShape(12.dp),
-                        color = accentColor.copy(alpha = 0.15f)
-                    ) {
-                        Text(
-                            text = "v" + updateInfo.versionName + " Available",
-                            fontSize = 12.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = accentColor,
-                            modifier = Modifier.padding(horizontal = 9.dp, vertical = 4.dp)
-                        )
-                    }
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Icon(
-                        imageVector = TablerIcons.ChevronRight,
-                        contentDescription = null,
-                        tint = accentColor,
-                        modifier = Modifier.size(20.dp)
-                    )
-                } else {
-                    Text(
-                        text = statusMessage ?: ("v" + currentVersion),
-                        fontSize = 13.sp,
-                        color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f),
-                        textAlign = TextAlign.End,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Icon(
-                        imageVector = TablerIcons.ChevronRight,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.3f),
-                        modifier = Modifier.size(20.dp)
-                    )
-                }
-            }
-        }
-    }
-}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

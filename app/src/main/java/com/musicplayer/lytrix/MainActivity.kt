@@ -364,48 +364,16 @@ class MainActivity : ComponentActivity() {
 
 
 
-            var availableUpdateInfo by remember { mutableStateOf<com.musicplayer.lytrix.utils.AppUpdateInfo?>(null) }
-
-            var showAppUpdateDialog by remember { mutableStateOf(false) }
-
-
-
-            // 🔥 আপগ্রেড চেকার (Meld এর মতো অ্যাপে ঢোকার সাথে সাথে ব্যাকগ্রাউন্ড চেক ও নোটিফিকেশন)
-
+            // Updates checker (Checks for updates in background & notifies if available)
             LaunchedEffect(Unit) {
-
                 try {
-
-                    delay(2500)
-
-                    val result = com.musicplayer.lytrix.utils.AppUpdateManager.checkForUpdate(forceRefresh = false)
-
-                    result.onSuccess { (info, hasUpdate) ->
-
-                        if (hasUpdate && info != null) {
-
-                            com.musicplayer.lytrix.utils.AppUpdateManager.showUpdateNotification(context, info)
-
-                            val isDismissed = com.musicplayer.lytrix.utils.AppUpdateManager.isVersionDismissed(context, info.versionName)
-
-                            if (!isDismissed || info.forceUpdate) {
-
-                                availableUpdateInfo = info
-
-                                showAppUpdateDialog = true
-
-                            }
-
-                        }
-
+                    delay(3000)
+                    if (com.musicplayer.lytrix.update.AppUpdateManager.isAutoCheckEnabled(context)) {
+                        com.musicplayer.lytrix.update.AppUpdateManager.check(context, notify = true)
                     }
-
                 } catch (e: Exception) {
-
                     e.printStackTrace()
-
                 }
-
             }
 
 
@@ -2818,17 +2786,7 @@ class MainActivity : ComponentActivity() {
 
 
 
-                    if (showAppUpdateDialog && availableUpdateInfo != null) {
 
-                        com.musicplayer.lytrix.ui.AppUpdateDialog(
-
-                            updateInfo = availableUpdateInfo!!,
-
-                            onDismiss = { showAppUpdateDialog = false }
-
-                        )
-
-                    }
 
 
 
