@@ -920,6 +920,10 @@ fun MeldDetailsScreen(
                             "User-Agent",
                             "Mozilla/5.0 (Linux; Android 13) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0 Mobile Safari/537.36"
                         )
+                        .header(
+                            com.musicplayer.lytrix.constants.LytrixSecurityConstants.SAAVN_SECRET_HEADER,
+                            com.musicplayer.lytrix.constants.LytrixSecurityConstants.SAAVN_SECRET_TOKEN
+                        )
                         .header("Accept", "application/json")
                         .build()
 
@@ -1116,6 +1120,10 @@ fun shareOnlineSong(context: android.content.Context, song: com.musicplayer.lytr
                 connection.connectTimeout = 5000
                 connection.readTimeout = 5000
                 connection.requestMethod = "GET"
+                connection.setRequestProperty(
+                    com.musicplayer.lytrix.constants.LytrixSecurityConstants.SAAVN_SECRET_HEADER,
+                    com.musicplayer.lytrix.constants.LytrixSecurityConstants.SAAVN_SECRET_TOKEN
+                )
                 val response = connection.inputStream.bufferedReader().use { it.readText() }
                 val dataArray = org.json.JSONObject(response).optJSONArray("data")
                 if (dataArray != null && dataArray.length() > 0) {

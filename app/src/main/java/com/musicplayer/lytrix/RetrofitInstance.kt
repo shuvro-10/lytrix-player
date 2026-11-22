@@ -10,9 +10,24 @@ object RetrofitInstance {
 
     private const val SAAVN_BASE_URL = "https://jiosaavn-api.shuvrodaspranto20170014.workers.dev/"
 
+    private val saavnClient = OkHttpClient.Builder()
+        .connectTimeout(30, TimeUnit.SECONDS)
+        .readTimeout(30, TimeUnit.SECONDS)
+        .addInterceptor { chain ->
+            val req = chain.request().newBuilder()
+                .addHeader(
+                    com.musicplayer.lytrix.constants.LytrixSecurityConstants.SAAVN_SECRET_HEADER,
+                    com.musicplayer.lytrix.constants.LytrixSecurityConstants.SAAVN_SECRET_TOKEN
+                )
+                .build()
+            chain.proceed(req)
+        }
+        .build()
+
     val api: JioSaavnApi by lazy {
         Retrofit.Builder()
             .baseUrl(SAAVN_BASE_URL)
+            .client(saavnClient)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
             .create(JioSaavnApi::class.java)

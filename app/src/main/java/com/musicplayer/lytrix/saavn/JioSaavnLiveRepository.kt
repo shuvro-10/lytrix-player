@@ -460,7 +460,10 @@ object JioSaavnLiveRepository {
 
     private fun fetchWorkerSongs(query: String, limit: Int): List<JioSaavnSong> {
         val url = "$CF_FALLBACK_BASE/api/search/songs?query=${URLEncoder.encode(query, "UTF-8")}&limit=$limit"
-        val req = Request.Builder().url(url).header("User-Agent", BROWSER_UA).build()
+        val req = Request.Builder().url(url)
+            .header("User-Agent", BROWSER_UA)
+            .header(com.musicplayer.lytrix.constants.LytrixSecurityConstants.SAAVN_SECRET_HEADER, com.musicplayer.lytrix.constants.LytrixSecurityConstants.SAAVN_SECRET_TOKEN)
+            .build()
         val body = client.newCall(req).execute().use { if (it.isSuccessful) it.body?.string() else null } ?: return emptyList()
         val root = JSONObject(body)
         val arr = root.optJSONObject("data")?.optJSONArray("results") ?: return emptyList()
@@ -469,7 +472,10 @@ object JioSaavnLiveRepository {
 
     private fun fetchWorkerPlaylists(query: String, limit: Int): List<SaavnCardItem> {
         val url = "$CF_FALLBACK_BASE/api/search/playlists?query=${URLEncoder.encode(query, "UTF-8")}&limit=$limit"
-        val req = Request.Builder().url(url).header("User-Agent", BROWSER_UA).build()
+        val req = Request.Builder().url(url)
+            .header("User-Agent", BROWSER_UA)
+            .header(com.musicplayer.lytrix.constants.LytrixSecurityConstants.SAAVN_SECRET_HEADER, com.musicplayer.lytrix.constants.LytrixSecurityConstants.SAAVN_SECRET_TOKEN)
+            .build()
         val body = client.newCall(req).execute().use { if (it.isSuccessful) it.body?.string() else null } ?: return emptyList()
         val root = JSONObject(body)
         val arr = root.optJSONObject("data")?.optJSONArray("results") ?: return emptyList()
@@ -497,7 +503,10 @@ object JioSaavnLiveRepository {
         } else {
             "$CF_FALLBACK_BASE/api/playlists?id=${URLEncoder.encode(id, "UTF-8")}&limit=50"
         }
-        val req = Request.Builder().url(endpoint).header("User-Agent", BROWSER_UA).build()
+        val req = Request.Builder().url(endpoint)
+            .header("User-Agent", BROWSER_UA)
+            .header(com.musicplayer.lytrix.constants.LytrixSecurityConstants.SAAVN_SECRET_HEADER, com.musicplayer.lytrix.constants.LytrixSecurityConstants.SAAVN_SECRET_TOKEN)
+            .build()
         val body = client.newCall(req).execute().use { if (it.isSuccessful) it.body?.string() else null } ?: return null
         val data = JSONObject(body).optJSONObject("data") ?: return null
         val songs = parseWorkerSongsArray(data.optJSONArray("songs"))
@@ -513,7 +522,10 @@ object JioSaavnLiveRepository {
 
     private fun fetchSongFromWorker(id: String): JioSaavnSong? {
         val url = "$CF_FALLBACK_BASE/api/songs?ids=${URLEncoder.encode(id, "UTF-8")}"
-        val req = Request.Builder().url(url).header("User-Agent", BROWSER_UA).build()
+        val req = Request.Builder().url(url)
+            .header("User-Agent", BROWSER_UA)
+            .header(com.musicplayer.lytrix.constants.LytrixSecurityConstants.SAAVN_SECRET_HEADER, com.musicplayer.lytrix.constants.LytrixSecurityConstants.SAAVN_SECRET_TOKEN)
+            .build()
         val body = client.newCall(req).execute().use { if (it.isSuccessful) it.body?.string() else null } ?: return null
         val arr = JSONObject(body).optJSONArray("data") ?: return null
         return parseWorkerSongsArray(arr).firstOrNull()

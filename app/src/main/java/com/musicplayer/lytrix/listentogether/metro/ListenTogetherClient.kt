@@ -170,6 +170,10 @@ class MetroClient(
                 val request = Request.Builder()
                     .url(url)
                     .header("User-Agent", userAgent)
+                    .header(
+                        com.musicplayer.lytrix.constants.LytrixSecurityConstants.SYNC_SECRET_HEADER,
+                        com.musicplayer.lytrix.constants.LytrixSecurityConstants.SYNC_SECRET_TOKEN
+                    )
                     .build()
 
                 webSocket = okHttpClient.newWebSocket(request, object : WebSocketListener() {
