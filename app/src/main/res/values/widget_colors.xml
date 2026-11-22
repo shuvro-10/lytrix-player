@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Material 3 Widget Colors - Light Fallback (< API 31) -->
+    <color name="widget_surface">#EDEAF5</color>
+    <color name="widget_card_surface">#DFDAE9</color>
+    <color name="widget_primary_container">#D7CCF8</color>
+    <color name="widget_on_primary_container">#21005D</color>
+    <color name="widget_tertiary_container">#FAD7E4</color>
+    <color name="widget_on_tertiary_container">#31111D</color>
+    <color name="widget_text_primary">#1C1B1F</color>
+    <color name="widget_text_secondary">#49454F</color>
+    <color name="widget_progress_fill">#6750A4</color>
+    <color name="widget_progress_track">#D3CDDF</color>
+    <color name="widget_icon_on_surface">#1C1B1F</color>
+</resources>

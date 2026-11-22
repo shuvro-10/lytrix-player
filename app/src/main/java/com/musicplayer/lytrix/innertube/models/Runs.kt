@@ -1,0 +1,62 @@
+/*
+ * Lytrix Player (2026)
+ * Licensed under GNU General Public License v3.0 (GPL-3.0)
+ */
+
+package com.musicplayer.lytrix.innertube.models
+
+import kotlinx.serialization.Serializable
+
+@Serializable
+data class Runs(
+    val runs: List<Run>?,
+)
+
+@Serializable
+data class Run(
+    val text: String,
+    val navigationEndpoint: NavigationEndpoint?,
+)
+
+fun List<Run>.splitBySeparator(): List<List<Run>> {
+    val res = mutableListOf<List<Run>>()
+    var tmp = mutableListOf<Run>()
+    forEach { run ->
+        if (run.text == " • ") {
+            res.add(tmp)
+            tmp = mutableListOf()
+        } else {
+            tmp.add(run)
+        }
+    }
+    res.add(tmp)
+    return res
+}
+
+fun List<List<Run>>.clean(): List<List<Run>> =
+    if (getOrNull(0)?.getOrNull(0)?.navigationEndpoint != null ||
+        (getOrNull(0)?.getOrNull(0)?.text?.contains(regex = Regex("[&,]"))) != false
+    ) {
+        this
+    } else {
+        this.drop(1)
+    }
+
+fun List<Run>.oddElements() =
+    filterIndexed { index, _ ->
+        index % 2 == 0
+    }
+
+fun List<Run>.toArtists(): List<Artist> =
+    mapNotNull { run ->
+        val endpoint = run.navigationEndpoint?.browseEndpoint ?: return@mapNotNull null
+        if (!endpoint.isArtistEndpoint && !endpoint.browseId.startsWith("UC")) return@mapNotNull null
+        run.text
+            .takeIf(String::isNotBlank)
+            ?.let { name ->
+                Artist(
+                    name = name,
+                    id = endpoint.browseId,
+                )
+            }
+    }

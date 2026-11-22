@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@android:id/background"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="horizontal"
+    android:background="@drawable/widget_background"
+    android:padding="14dp"
+    android:gravity="center_vertical"
+    android:theme="@style/Theme.Lytrix.Widget">
+
+    <ImageView
+        android:id="@+id/widget_deck_album_art"
+        android:layout_width="88dp"
+        android:layout_height="88dp"
+        android:scaleType="centerCrop"
+        android:src="@mipmap/ic_launcher"
+        android:contentDescription="Album art" />
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:layout_marginStart="14dp"
+        android:orientation="vertical">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/widget_deck_title"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Lytrix Player"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/widget_text_primary"
+                    android:maxLines="1"
+                    android:ellipsize="end"
+                    android:includeFontPadding="false" />
+
+                <TextView
+                    android:id="@+id/widget_deck_artist"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:text="Tap to play"
+                    android:textSize="12sp"
+                    android:textColor="@color/widget_text_secondary"
+                    android:maxLines="1"
+                    android:ellipsize="end"
+                    android:includeFontPadding="false" />
+            </LinearLayout>
+
+            <FrameLayout
+                android:id="@+id/widget_deck_like_container"
+                android:layout_width="38dp"
+                android:layout_height="38dp"
+                android:layout_marginStart="8dp"
+                android:background="@drawable/widget_like_button_bg">
+
+                <ImageView
+                    android:id="@+id/widget_deck_like_icon"
+                    android:layout_width="19dp"
+                    android:layout_height="19dp"
+                    android:layout_gravity="center"
+                    android:src="@drawable/ic_widget_heart_outline_nav"
+                    android:contentDescription="Like song" />
+            </FrameLayout>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:baselineAligned="false"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <FrameLayout
+                android:id="@+id/widget_deck_prev_container"
+                android:layout_width="40dp"
+                android:layout_height="42dp"
+                android:background="@drawable/widget_tile_bg">
+
+                <ImageView
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:layout_gravity="center"
+                    android:src="@drawable/ic_widget_prev"
+                    android:contentDescription="Previous track" />
+            </FrameLayout>
+
+            <FrameLayout
+                android:id="@+id/widget_deck_play_container"
+                android:layout_width="0dp"
+                android:layout_height="42dp"
+                android:layout_weight="1"
+                android:layout_marginStart="8dp"
+                android:layout_marginEnd="8dp"
+                android:background="@drawable/widget_play_pill_bg">
+
+                <ImageView
+                    android:id="@+id/widget_deck_play_pause"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:layout_gravity="center"
+                    android:src="@drawable/ic_widget_play"
+                    android:contentDescription="Play or pause" />
+            </FrameLayout>
+
+            <FrameLayout
+                android:id="@+id/widget_deck_next_container"
+                android:layout_width="40dp"
+                android:layout_height="42dp"
+                android:background="@drawable/widget_tile_bg">
+
+                <ImageView
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:layout_gravity="center"
+                    android:src="@drawable/ic_widget_next"
+                    android:contentDescription="Next track" />
+            </FrameLayout>
+        </LinearLayout>
+
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="5dp"
+            android:layout_marginTop="10dp">
+
+            <ImageView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:src="@drawable/widget_progress_track"
+                android:scaleType="fitXY"
+                android:contentDescription="@null" />
+
+            <ImageView
+                android:id="@+id/widget_deck_progress_fill"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:src="@drawable/widget_progress_clip"
+                android:scaleType="fitXY"
+                android:contentDescription="@null" />
+        </FrameLayout>
+    </LinearLayout>
+</LinearLayout>

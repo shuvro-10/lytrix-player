@@ -1,0 +1,26 @@
+{
+  "project_info": {
+    "project_number": "123456789000",
+    "firebase_url": "https://your-app-default-rtdb.firebaseio.com",
+    "project_id": "your-app-id",
+    "storage_bucket": "your-app-id.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:123456789000:android:abcdef123456",
+        "android_client_info": {
+          "package_name": "com.musicplayer.lytrix"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "YOUR_FIREBASE_API_KEY_HERE"
+        }
+      ],
+      "services": {}
+    }
+  ],
+  "configuration_version": "1"
+}

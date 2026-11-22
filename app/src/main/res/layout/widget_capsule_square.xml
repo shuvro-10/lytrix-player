@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@android:id/background"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/widget_background"
+    android:padding="10dp"
+    android:theme="@style/Theme.Lytrix.Widget">
+
+    <ImageView
+        android:id="@+id/widget_compact_album_art"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:scaleType="centerCrop"
+        android:src="@mipmap/ic_launcher"
+        android:contentDescription="Album art" />
+
+    <FrameLayout
+        android:id="@+id/widget_compact_like_container"
+        android:layout_width="34dp"
+        android:layout_height="34dp"
+        android:layout_gravity="top|end"
+        android:layout_marginTop="4dp"
+        android:layout_marginEnd="4dp"
+        android:background="@drawable/widget_like_button_bg">
+
+        <ImageView
+            android:id="@+id/widget_compact_like_icon"
+            android:layout_width="17dp"
+            android:layout_height="17dp"
+            android:layout_gravity="center"
+            android:src="@drawable/ic_widget_heart_outline_nav"
+            android:contentDescription="Like song" />
+    </FrameLayout>
+
+    <FrameLayout
+        android:id="@+id/widget_compact_play_container"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:layout_gravity="bottom|center_horizontal"
+        android:layout_marginBottom="6dp"
+        android:background="@drawable/widget_play_button_circular">
+
+        <ImageView
+            android:id="@+id/widget_compact_play_pause"
+            android:layout_width="25dp"
+            android:layout_height="25dp"
+            android:layout_gravity="center"
+            android:src="@drawable/ic_widget_play"
+            android:contentDescription="Play or pause" />
+    </FrameLayout>
+</FrameLayout>

@@ -1,0 +1,107 @@
+<resources>
+    <string name="app_name">Lytrix Player</string>
+    <string name="settings">Settings</string>
+    <string name="language">Language</string>
+    <string name="total_playtime">Total Playtime</string>
+    <string name="this_week">This Week</string>
+    <string name="sleep_timer">Sleep Timer</string>
+    <string name="theme">Theme</string>
+    <string name="version">Version</string>
+    <string name="theme_settings">Theme Settings</string>
+    <string name="app_theme_mode">App Theme Mode</string>
+    <string name="system">System</string>
+    <string name="light">Light</string>
+    <string name="dark">Dark</string>
+    <string name="layout_options">Layout Options</string>
+    <string name="list">List</string>
+    <string name="grid_2">Grid 2</string>
+    <string name="grid_3">Grid 3</string>
+    <string name="accent_color">Accent Color</string>
+    <string name="custom_background_image">Custom Background Image</string>
+    <string name="songs">Songs</string>
+    <string name="playlists">Playlists</string>
+    <string name="artists">Artists</string>
+    <string name="albums">Albums</string>
+    <string name="search">Search...</string>
+    <!-- Mock UI specific (Generic words, translated for realism) -->
+    <string name="add_new">Add new</string>
+    <string name="liked_songs">Liked Songs</string>
+    <string name="recently_played">Recently played</string>
+    <string name="most_played">Most played</string>
+    <string name="tracks">tracks</string>
+    <string name="unknown_artist">Unknown Artist</string>
+    <string name="generic_band">Generic Band</string>
+    <string name="the_melodies">The Melodies</string>
+    <string name="chill_sounds">Chill Sounds</string>
+    <string name="midnight_city">Midnight City</string>
+    <string name="neon_dreams">Neon Dreams</string>
+    <string name="ocean_waves">Ocean Waves</string>
+    <string name="lo_fi_chill">Lo-Fi Chill</string>
+    <string name="acoustic_sunset">Acoustic Sunset</string>
+    <string name="electric_night">Electric Night</string>
+    <string name="first_encounter">First Encounter</string>
+    <string name="deep_house">Deep House</string>
+    <string name="acoustic_sessions">Acoustic Sessions</string>
+    <string name="future_bass">Future Bass</string>
+    <string name="local_heroes">Local Heroes</string>
+    <string name="sound_garden">Sound Garden</string>
+    <string name="delete_playlist_title">Delete playlist?</string>
+    <string name="delete_playlist_text">Are you sure you want to delete this playlist?</string>
+    <string name="delete">Delete</string>
+    <string name="cancel">Cancel</string>
+    
+    <!-- Video Player Settings -->
+    <string name="video_settings">Video Settings</string>
+    <string name="share">Share</string>
+    <string name="floating_window">Floating window</string>
+    <string name="play_mode">Play mode</string>
+    <string name="scale_adjust">Scale adjust</string>
+    <string name="speed">Speed</string>
+    <string name="audio_track">Audio track</string>
+    <string name="hide">Hide</string>
+    <string name="loop_one">Loop one</string>
+    <string name="loop_all">Loop all</string>
+    <string name="pause_after_play">Pause after play</string>
+
+    <!-- Lyrics Sharing -->
+    <string name="share_lyrics">Share Lyrics</string>
+    <string name="share_as_text">Share as Text</string>
+    <string name="share_as_image">Share as Image</string>
+    <string name="customize_colors">Customize Style &amp; Colors</string>
+    <string name="player_background_style">Background Style</string>
+    <string name="player_background_solid">Solid</string>
+    <string name="player_background_blur">Blur</string>
+    <string name="gradient">Gradient</string>
+    <string name="background_color">Background Color</string>
+    <string name="text_color">Text Color</string>
+    <string name="secondary_text_color">Secondary Text Color</string>
+    <string name="aspect_ratio">Aspect Ratio (Size)</string>
+    <string name="layout_square">1:1 Square</string>
+    <string name="layout_story">9:16 Story</string>
+    <string name="layout_portrait">4:5 Portrait</string>
+    <string name="generating_image">Generating image…</string>
+    <string name="please_wait">Please wait</string>
+    <string name="share_selected">Share Selected</string>
+
+    <!-- Privacy Settings (Meld style) -->
+    <string name="privacy">Privacy</string>
+    <string name="listen_history">Listen history</string>
+    <string name="pause_listen_history">Pause listen history</string>
+    <string name="clear_listen_history">Clear listen history</string>
+    <string name="clear_listen_history_confirm">Are you sure you want to clear all listen history?</string>
+    <string name="clear_online_listen_history_confirm">Are you sure you want to clear listening history for online songs? This will reset your online song history, Speed dial, Quick picks, and online recommendations.</string>
+    <string name="clear_local_listen_history_confirm">Are you sure you want to clear listening history for local songs? This will reset Recently Played and Most Played for all local tracks.</string>
+    <string name="history">History</string>
+    <string name="local_history">App History</string>
+    <string name="remote_history">YouTube Music</string>
+    <string name="online_history_warning">Online history is stored locally on this device and not backed up to the cloud. Save songs by liking them or adding to playlists.</string>
+    <string name="search_history">Search history</string>
+    <string name="pause_search_history">Pause search history</string>
+    <string name="clear_search_history">Clear search history</string>
+    <string name="clear_search_history_confirm">Are you sure you want to clear all search history?</string>
+    <string name="misc">Misc</string>
+    <string name="disable_screenshot">Disable screenshot</string>
+    <string name="disable_screenshot_desc">When this option is on, screenshots and the app\'s view in Recents are disabled.</string>
+    <string name="crash_reporting">Send crash reports</string>
+    <string name="crash_reporting_desc">Automatically send anonymous crash and exception details (device model, Android version, app version, stack trace) to help diagnose issues. No account, playlist, or personal data is included.</string>
+</resources>

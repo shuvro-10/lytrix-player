@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@android:id/background"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="horizontal"
+    android:background="@drawable/widget_background"
+    android:paddingStart="10dp"
+    android:paddingEnd="10dp"
+    android:paddingTop="8dp"
+    android:paddingBottom="8dp"
+    android:gravity="center_vertical"
+    android:theme="@style/Theme.Lytrix.Widget">
+
+    <ImageView
+        android:id="@+id/widget_wide_album_art"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:scaleType="centerCrop"
+        android:src="@mipmap/ic_launcher"
+        android:contentDescription="Album art" />
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:layout_marginStart="10dp"
+        android:layout_marginEnd="8dp"
+        android:orientation="vertical"
+        android:gravity="center_vertical">
+
+        <TextView
+            android:id="@+id/widget_wide_title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Lytrix Player"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            android:textColor="@color/widget_text_primary"
+            android:maxLines="1"
+            android:ellipsize="end"
+            android:includeFontPadding="false" />
+
+        <TextView
+            android:id="@+id/widget_wide_artist"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:text="Tap to play"
+            android:textSize="12sp"
+            android:textColor="@color/widget_text_secondary"
+            android:maxLines="1"
+            android:ellipsize="end"
+            android:includeFontPadding="false" />
+    </LinearLayout>
+
+    <FrameLayout
+        android:id="@+id/widget_wide_like_container"
+        android:layout_width="36dp"
+        android:layout_height="36dp"
+        android:layout_marginEnd="6dp"
+        android:background="@drawable/widget_like_button_bg">
+
+        <ImageView
+            android:id="@+id/widget_wide_like_icon"
+            android:layout_width="18dp"
+            android:layout_height="18dp"
+            android:layout_gravity="center"
+            android:src="@drawable/ic_widget_heart_outline_nav"
+            android:contentDescription="Like song" />
+    </FrameLayout>
+
+    <FrameLayout
+        android:id="@+id/widget_wide_play_container"
+        android:layout_width="42dp"
+        android:layout_height="42dp"
+        android:layout_marginEnd="6dp"
+        android:background="@drawable/widget_play_button_circular">
+
+        <ImageView
+            android:id="@+id/widget_wide_play_pause"
+            android:layout_width="22dp"
+            android:layout_height="22dp"
+            android:layout_gravity="center"
+            android:src="@drawable/ic_widget_play"
+            android:contentDescription="Play or pause" />
+    </FrameLayout>
+
+    <FrameLayout
+        android:id="@+id/widget_wide_next_container"
+        android:layout_width="36dp"
+        android:layout_height="36dp"
+        android:background="@drawable/widget_tile_bg">
+
+        <ImageView
+            android:layout_width="19dp"
+            android:layout_height="19dp"
+            android:layout_gravity="center"
+            android:src="@drawable/ic_widget_next"
+            android:contentDescription="Next track" />
+    </FrameLayout>
+</LinearLayout>
