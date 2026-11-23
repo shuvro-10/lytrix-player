@@ -56,6 +56,8 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.luminance
+import com.musicplayer.lytrix.ui.theme.LocalIsDarkTheme
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.StrokeJoin
@@ -2235,13 +2237,16 @@ fun OnlineMusicScreen(viewModel: PlayerViewModel, onClose: () -> Unit = {}, onNa
                                             items(mediaTypes) { type ->
                                                 val isSelected = if (type == "MUSIC") currentMediaType == "MUSIC" else currentMediaType in listOf("SHOWS", "PODCAST", "AUDIOBOOK")
                                                 val label = if (type == "MUSIC") "Music" else "Shows"
+                                                val isDark = LocalIsDarkTheme.current
+                                                val chipBg = if (isSelected) accentColor else if (isDark) Color(0xFF2D2D2D) else MaterialTheme.colorScheme.surfaceContainerHigh
+                                                val chipTextColor = if (isSelected) {
+                                                    if (isDark) Color.Black else if (accentColor.luminance() > 0.5f) Color.Black else Color.White
+                                                } else {
+                                                    if (isDark) Color.White else MaterialTheme.colorScheme.onSurface
+                                                }
                                                 Box(
                                                     modifier = Modifier.clip(RoundedCornerShape(24.dp))
-                                                        .background(
-                                                            if (isSelected) accentColor else Color(
-                                                                0xFF2D2D2D
-                                                            )
-                                                        )
+                                                        .background(chipBg)
                                                         .clickable { currentMediaType = if (type == "MUSIC") "MUSIC" else "SHOWS" }
                                                         .padding(
                                                             horizontal = 16.dp,
@@ -2250,7 +2255,7 @@ fun OnlineMusicScreen(viewModel: PlayerViewModel, onClose: () -> Unit = {}, onNa
                                                 ) {
                                                     Text(
                                                         text = label,
-                                                        color = if (isSelected) Color.Black else Color.White,
+                                                        color = chipTextColor,
                                                         fontSize = 13.sp,
                                                         fontWeight = FontWeight.SemiBold
                                                     )
@@ -2320,13 +2325,14 @@ fun OnlineMusicScreen(viewModel: PlayerViewModel, onClose: () -> Unit = {}, onNa
                                     val tabs = listOf("PLAYLISTS", "SONGS", "ARTISTS", "ALBUMS")
                                     items(tabs) { tab ->
                                         val isSelected = currentSubTab == tab
+                                        val isDark = LocalIsDarkTheme.current
+                                        val tabBorderColor = if (isSelected) accentColor else if (isDark) Color.Gray.copy(alpha = 0.3f) else MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
+                                        val tabTextColor = if (isSelected) accentColor else if (isDark) Color.White.copy(alpha = 0.8f) else MaterialTheme.colorScheme.onSurfaceVariant
                                         Box(
                                             modifier = Modifier.clip(RoundedCornerShape(24.dp))
                                                 .border(
                                                     1.dp,
-                                                    if (isSelected) accentColor else Color.Gray.copy(
-                                                        alpha = 0.3f
-                                                    ),
+                                                    tabBorderColor,
                                                     RoundedCornerShape(24.dp)
                                                 )
                                                 .background(if (isSelected) accentColor.copy(alpha = 0.1f) else Color.Transparent)
@@ -2336,9 +2342,7 @@ fun OnlineMusicScreen(viewModel: PlayerViewModel, onClose: () -> Unit = {}, onNa
                                             Text(
                                                 text = tab.lowercase()
                                                     .replaceFirstChar { it.uppercase() },
-                                                color = if (isSelected) accentColor else Color.White.copy(
-                                                    alpha = 0.8f
-                                                ),
+                                                color = tabTextColor,
                                                 fontSize = 13.sp,
                                                 fontWeight = FontWeight.Medium
                                             )
@@ -6417,9 +6421,10 @@ private fun PremiumMenuSquareButton(icon: androidx.compose.ui.graphics.vector.Im
 
 private fun YTMusicChip(text: String, isSelected: Boolean, onClick: () -> Unit) {
     val haptic = androidx.compose.ui.platform.LocalHapticFeedback.current
-    val unselectedBg = Color.White.copy(alpha = 0.08f)
-    val unselectedText = Color.White.copy(alpha = 0.92f)
-    val unselectedBorder = Color.White.copy(alpha = 0.12f)
+    val isDark = LocalIsDarkTheme.current
+    val unselectedBg = if (isDark) Color.White.copy(alpha = 0.08f) else MaterialTheme.colorScheme.surfaceContainerHigh
+    val unselectedText = if (isDark) Color.White.copy(alpha = 0.92f) else MaterialTheme.colorScheme.onSurface
+    val unselectedBorder = if (isDark) Color.White.copy(alpha = 0.12f) else MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
     val chipBg by animateColorAsState(
         targetValue = if (isSelected) MaterialTheme.colorScheme.primary else unselectedBg,
         animationSpec = tween(250),
@@ -9175,10 +9180,29 @@ fun SearchScreen(
                         val searchChips = listOf("All", "Songs", "Videos", "Albums", "Artists", "Featured Playlists", "Community playlists", "Podcasts", "Episodes", "Profiles")
                         LazyRow(modifier = Modifier.fillMaxWidth().padding(start = 16.dp, end = 16.dp, bottom = 12.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                             items(searchChips) { chip ->
-                                Box(modifier = Modifier.clip(RoundedCornerShape(24.dp)).background(if (searchFilterContext == chip) Color.White else Color.Transparent)
-                                    .then(if (searchFilterContext != chip) Modifier.border(1.dp, Color.White.copy(alpha = 0.2f), RoundedCornerShape(24.dp)) else Modifier)
+                                val isSelected = searchFilterContext == chip
+                                val isDark = LocalIsDarkTheme.current
+                                val chipBg = if (isSelected) {
+                                    if (isDark) Color.White else MaterialTheme.colorScheme.primary
+                                } else {
+                                    if (isDark) Color.Transparent else MaterialTheme.colorScheme.surfaceContainerHigh
+                                }
+                                val chipBorderModifier = if (!isSelected) {
+                                    Modifier.border(
+                                        1.dp,
+                                        if (isDark) Color.White.copy(alpha = 0.2f) else MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
+                                        RoundedCornerShape(24.dp)
+                                    )
+                                } else Modifier
+                                val chipTextColor = if (isSelected) {
+                                    if (isDark) Color.Black else MaterialTheme.colorScheme.onPrimary
+                                } else {
+                                    if (isDark) Color.White else MaterialTheme.colorScheme.onSurface
+                                }
+                                Box(modifier = Modifier.clip(RoundedCornerShape(24.dp)).background(chipBg)
+                                    .then(chipBorderModifier)
                                     .clickable { searchFilterContext = chip }.padding(horizontal = 16.dp, vertical = 8.dp)
-                                ) { Text(text = chip, color = if (searchFilterContext == chip) Color.Black else Color.White, fontSize = 14.sp, fontWeight = FontWeight.Medium) }
+                                ) { Text(text = chip, color = chipTextColor, fontSize = 14.sp, fontWeight = FontWeight.Medium) }
                             }
                         }
                         if (innerTubeResults.isEmpty()) {

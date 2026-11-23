@@ -41,7 +41,7 @@ fun AmbientThemeGlow(
 
     val targetGlow = when {
         tint == null -> backgroundColor
-        isLightTheme -> tint.copy(alpha = 0.16f)
+        isLightTheme -> tint.copy(alpha = 0.28f)
         else -> tint.copy(alpha = intensity)
     }
 
