@@ -605,7 +605,7 @@ fun MeldNowPlayingFullScreen(
                             .fillMaxHeight()
                     )
                 } else {
-                // Left Column: NextSongTransitionArt + 5 Toolbar Buttons (for static cover & Apple Music 1:1)
+                // Left Column: 16:9 Floating Video Card OR NextSongTransitionArt + 5 Toolbar Buttons
                 Column(
                     modifier = Modifier
                         .weight(0.42f)
@@ -613,42 +613,86 @@ fun MeldNowPlayingFullScreen(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Center
                 ) {
-                    Box(
-                        modifier = Modifier
-                            .weight(1f, fill = false)
-                            .aspectRatio(1f)
-                            .padding(vertical = 4.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        NextSongTransitionArt(
-                            currentSong = song,
-                            nextSong = nextSong,
-                            currentPositionMs = currentPosition,
-                            durationMs = duration,
-                            isPlaying = isPlaying,
-                            isTransitionEnabled = isTransitionEnabled,
-                            artData = artData,
-                            nextArtData = nextArtData,
-                            manualSkipTrigger = manualSkipTrigger,
-                            onLongPress = null,
-                            onSkipNext = performSkipNext,
-                            onSkipPrevious = {
-                                onSkipPrevious()
-                                viewModel.forceSyncToFirebase()
-                            },
-                            onSeek = { seekPos ->
-                                onSeek(seekPos)
-                                viewModel.forceSyncToFirebase()
-                            },
-                            onPlayPause = {
-                                onPlayPause()
-                                viewModel.forceSyncToFirebase()
-                            },
-                            gesturesEnabled = playerGesturesEnabled,
-                            isGuest = isGuest,
-                            visualMedia = visualMedia.takeIf { it?.type == com.musicplayer.lytrix.spotify.canvas.VisualMediaType.APPLE_MUSIC_MOTION },
-                            modifier = Modifier.fillMaxSize()
-                        )
+                    if (isVideoModeActive) {
+                        // 16:9 Crisp Floating Video Card for Material 3
+                        Box(
+                            modifier = Modifier
+                                .weight(1f, fill = false)
+                                .fillMaxWidth()
+                                .aspectRatio(16f / 9f)
+                                .padding(vertical = 4.dp)
+                                .clip(RoundedCornerShape(20.dp))
+                                .background(Color.Black),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            com.musicplayer.lytrix.ui.player.NowPlayingMediaStage(
+                                viewModel = viewModel,
+                                song = song,
+                                artData = artData,
+                                visualMedia = visualMedia,
+                                isVideoModeActive = true,
+                                isPlaying = isPlaying,
+                                currentPosition = currentPosition,
+                                duration = duration,
+                                accentColor = effectiveAccent,
+                                gesturesEnabled = playerGesturesEnabled,
+                                isGuest = isGuest,
+                                shape = RoundedCornerShape(20.dp),
+                                onSeek = { seekPos ->
+                                    onSeek(seekPos)
+                                    viewModel.forceSyncToFirebase()
+                                },
+                                onPlayPause = {
+                                    onPlayPause()
+                                    viewModel.forceSyncToFirebase()
+                                },
+                                onSkipNext = performSkipNext,
+                                onSkipPrevious = {
+                                    onSkipPrevious()
+                                    viewModel.forceSyncToFirebase()
+                                },
+                                videoResizeMode = currentResizeMode,
+                                modifier = Modifier.fillMaxSize()
+                            )
+                        }
+                    } else {
+                        Box(
+                            modifier = Modifier
+                                .weight(1f, fill = false)
+                                .aspectRatio(1f)
+                                .padding(vertical = 4.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            NextSongTransitionArt(
+                                currentSong = song,
+                                nextSong = nextSong,
+                                currentPositionMs = currentPosition,
+                                durationMs = duration,
+                                isPlaying = isPlaying,
+                                isTransitionEnabled = isTransitionEnabled,
+                                artData = artData,
+                                nextArtData = nextArtData,
+                                manualSkipTrigger = manualSkipTrigger,
+                                onLongPress = null,
+                                onSkipNext = performSkipNext,
+                                onSkipPrevious = {
+                                    onSkipPrevious()
+                                    viewModel.forceSyncToFirebase()
+                                },
+                                onSeek = { seekPos ->
+                                    onSeek(seekPos)
+                                    viewModel.forceSyncToFirebase()
+                                },
+                                onPlayPause = {
+                                    onPlayPause()
+                                    viewModel.forceSyncToFirebase()
+                                },
+                                gesturesEnabled = playerGesturesEnabled,
+                                isGuest = isGuest,
+                                visualMedia = visualMedia.takeIf { it?.type == com.musicplayer.lytrix.spotify.canvas.VisualMediaType.APPLE_MUSIC_MOTION },
+                                modifier = Modifier.fillMaxSize()
+                            )
+                        }
                     }
 
                     Spacer(modifier = Modifier.height(10.dp))

@@ -599,13 +599,21 @@ fun NowPlayingMediaStage(
             swipeEnabled = false,
             modifier = modifier.clip(shape).background(Color.Black)
         ) {
-            // High-quality artwork underneath: always visible until video has rendered first frame
-            AsyncImage(
-                model = artModel,
-                contentDescription = null,
-                contentScale = ContentScale.Crop,
-                modifier = Modifier.fillMaxSize()
-            )
+            // High-quality artwork underneath: visible only until video has rendered first frame (prevents leaking behind letterbox)
+            if (!isVideoReady || !hasRenderedFirstFrame) {
+                AsyncImage(
+                    model = artModel,
+                    contentDescription = null,
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier.fillMaxSize()
+                )
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    LytrixExpressiveSpinner(color = accentColor, size = 42.dp)
+                }
+            }
 
             if (exoPlayer != null) {
                 val is16by9 = viewModel.isSong16by9(song)

@@ -1460,64 +1460,109 @@ fun NowPlayingFullScreen(
                 if (isLandscape) {
                     Row(modifier = Modifier.weight(1f).fillMaxWidth().padding(bottom = 16.dp), verticalAlignment = Alignment.CenterVertically) {
                         Box(modifier = Modifier.weight(0.45f).fillMaxHeight(), contentAlignment = Alignment.Center) {
-                            PlayerCoverWithGestures(
-                                gesturesEnabled = playerGesturesEnabled,
-                                isGuest = isGuest,
-                                isPlaying = isPlaying,
-                                currentPosition = currentPosition,
-                                duration = duration,
-                                onSeek = { seekPos ->
-                                    onSeek(seekPos)
-                                    viewModel.forceSyncToFirebase()
-                                },
-                                onPlayPause = {
-                                    onPlayPause()
-                                    viewModel.forceSyncToFirebase()
-                                },
-                                onSkipNext = {
-                                    onSkipNext()
-                                    viewModel.forceSyncToFirebase()
-                                },
-                                onSkipPrevious = {
-                                    onSkipPrevious()
-                                    viewModel.forceSyncToFirebase()
-                                },
-                                onLongPress = { if (isLocalSong) showArtOptionsDialog = true },
-                                modifier = Modifier
-                                    .aspectRatio(1f, matchHeightConstraintsFirst = false)
-                                    .clip(RoundedCornerShape(28.dp))
-                                    .background(MaterialTheme.colorScheme.surfaceContainer)
-                                    .border(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.25f), RoundedCornerShape(28.dp))
-                            ) {
-                                val artData = rememberEmbeddedArt(context, song)
-                                val imageRequest = remember(artData, song.uriString, song.albumArtUriString) {
-                                    val dataToLoad = artData ?: song.uriString
-                                    val reqBuilder = ImageRequest.Builder(context).data(dataToLoad).crossfade(true)
-                                    if ((artData == null || dataToLoad is String) && song.isVideo && dataToLoad == song.uriString) { reqBuilder.videoFrameMillis(1000) }
-                                    reqBuilder.build()
-                                }
-                                if (visualMedia != null) {
-                                    LoopingCoverVideoPlayer(
-                                        videoUrl = visualMedia!!.url,
-                                        mediaType = visualMedia!!.type,
+                            if (isVideoModeActive) {
+                                val currentResizeMode by viewModel.videoResizeMode.collectAsState()
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .aspectRatio(16f / 9f)
+                                        .clip(RoundedCornerShape(24.dp))
+                                        .background(Color.Black),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    com.musicplayer.lytrix.ui.player.NowPlayingMediaStage(
+                                        viewModel = viewModel,
                                         song = song,
-                                        artData = artData,
+                                        artData = null,
+                                        visualMedia = visualMedia,
+                                        isVideoModeActive = true,
                                         isPlaying = isPlaying,
-                                        currentPositionMs = currentPosition,
-                                        durationMs = duration,
-                                        onSeek = onSeek,
-                                        onPlayPause = onPlayPause,
-                                        onSkipNext = onSkipNext,
-                                        onSkipPrevious = onSkipPrevious,
-                                        onLongPress = { if (isLocalSong) showArtOptionsDialog = true },
+                                        currentPosition = currentPosition,
+                                        duration = duration,
+                                        accentColor = accentColor,
                                         gesturesEnabled = playerGesturesEnabled,
                                         isGuest = isGuest,
-                                        clips = visualMedia!!.clips,
+                                        shape = RoundedCornerShape(24.dp),
+                                        onSeek = { seekPos ->
+                                            onSeek(seekPos)
+                                            viewModel.forceSyncToFirebase()
+                                        },
+                                        onPlayPause = {
+                                            onPlayPause()
+                                            viewModel.forceSyncToFirebase()
+                                        },
+                                        onSkipNext = {
+                                            onSkipNext()
+                                            viewModel.forceSyncToFirebase()
+                                        },
+                                        onSkipPrevious = {
+                                            onSkipPrevious()
+                                            viewModel.forceSyncToFirebase()
+                                        },
+                                        videoResizeMode = currentResizeMode,
                                         modifier = Modifier.fillMaxSize()
                                     )
-                                } else {
-                                    Image(painter = rememberAsyncImagePainter(model = imageRequest), contentDescription = "Cover Art Large", contentScale = ContentScale.Crop, modifier = Modifier.fillMaxSize())
-                                    Box(modifier = Modifier.fillMaxSize().background(Color.Black.copy(alpha = 0.15f)))
+                                }
+                            } else {
+                                PlayerCoverWithGestures(
+                                    gesturesEnabled = playerGesturesEnabled,
+                                    isGuest = isGuest,
+                                    isPlaying = isPlaying,
+                                    currentPosition = currentPosition,
+                                    duration = duration,
+                                    onSeek = { seekPos ->
+                                        onSeek(seekPos)
+                                        viewModel.forceSyncToFirebase()
+                                    },
+                                    onPlayPause = {
+                                        onPlayPause()
+                                        viewModel.forceSyncToFirebase()
+                                    },
+                                    onSkipNext = {
+                                        onSkipNext()
+                                        viewModel.forceSyncToFirebase()
+                                    },
+                                    onSkipPrevious = {
+                                        onSkipPrevious()
+                                        viewModel.forceSyncToFirebase()
+                                    },
+                                    onLongPress = { if (isLocalSong) showArtOptionsDialog = true },
+                                    modifier = Modifier
+                                        .aspectRatio(1f, matchHeightConstraintsFirst = false)
+                                        .clip(RoundedCornerShape(28.dp))
+                                        .background(MaterialTheme.colorScheme.surfaceContainer)
+                                        .border(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.25f), RoundedCornerShape(28.dp))
+                                ) {
+                                    val artData = rememberEmbeddedArt(context, song)
+                                    val imageRequest = remember(artData, song.uriString, song.albumArtUriString) {
+                                        val dataToLoad = artData ?: song.uriString
+                                        val reqBuilder = ImageRequest.Builder(context).data(dataToLoad).crossfade(true)
+                                        if ((artData == null || dataToLoad is String) && song.isVideo && dataToLoad == song.uriString) { reqBuilder.videoFrameMillis(1000) }
+                                        reqBuilder.build()
+                                    }
+                                    if (visualMedia != null) {
+                                        LoopingCoverVideoPlayer(
+                                            videoUrl = visualMedia!!.url,
+                                            mediaType = visualMedia!!.type,
+                                            song = song,
+                                            artData = artData,
+                                            isPlaying = isPlaying,
+                                            currentPositionMs = currentPosition,
+                                            durationMs = duration,
+                                            onSeek = onSeek,
+                                            onPlayPause = onPlayPause,
+                                            onSkipNext = onSkipNext,
+                                            onSkipPrevious = onSkipPrevious,
+                                            onLongPress = { if (isLocalSong) showArtOptionsDialog = true },
+                                            gesturesEnabled = playerGesturesEnabled,
+                                            isGuest = isGuest,
+                                            clips = visualMedia!!.clips,
+                                            modifier = Modifier.fillMaxSize()
+                                        )
+                                    } else {
+                                        Image(painter = rememberAsyncImagePainter(model = imageRequest), contentDescription = "Cover Art Large", contentScale = ContentScale.Crop, modifier = Modifier.fillMaxSize())
+                                        Box(modifier = Modifier.fillMaxSize().background(Color.Black.copy(alpha = 0.15f)))
+                                    }
                                 }
                             }
                         }

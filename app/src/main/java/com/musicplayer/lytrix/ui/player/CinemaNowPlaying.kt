@@ -25,6 +25,7 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.material3.ripple
 import com.musicplayer.lytrix.ui.component.tactileSpringPress
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
@@ -662,72 +663,157 @@ fun CinemaNowPlayingFullScreen(
                     )
 
                     if (isLandscape) {
-                        // Lytrix ImmersiveLandscape port: Left 48% Stage with soft horizontal fade, Right 52% Controls
+                        // Cinema Landscape: Left 48% with 16:9 Crisp Video Card + Atmospheric Cinema Fog OR Artwork with Horizontal Fade + Right 52% Controls
                         val artWidth = viewportWidth * 0.48f
 
-                        Box(
-                            modifier = Modifier
-                                .size(width = artWidth, height = viewportHeight)
-                                .align(Alignment.TopStart)
-                                .then(
-                                    if (isVideoModeActive) {
-                                        Modifier.background(Color.Black.copy(alpha = 0.35f))
-                                    } else {
-                                        Modifier
-                                            .graphicsLayer {
-                                                compositingStrategy = CompositingStrategy.Offscreen
-                                                scaleX = stageScale
-                                                scaleY = stageScale
-                                            }
-                                            .drawWithContent {
-                                                drawContent()
-                                                drawRect(brush = horizontalStageFadeMask, blendMode = BlendMode.DstIn)
-                                            }
+                        if (isVideoModeActive) {
+                            Column(
+                                modifier = Modifier
+                                    .size(width = artWidth, height = viewportHeight)
+                                    .align(Alignment.TopStart)
+                                    .systemBarsPadding()
+                                    .padding(start = 18.dp, end = 16.dp, top = 12.dp, bottom = 12.dp),
+                                verticalArrangement = Arrangement.SpaceBetween,
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
+                                // Top row: Collapse button (auto-hides in theatre focus mode)
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.SpaceBetween
+                                ) {
+                                    androidx.compose.animation.AnimatedVisibility(
+                                        visible = !theatreFocusMode,
+                                        enter = fadeIn(tween(240)),
+                                        exit = fadeOut(tween(240))
+                                    ) {
+                                        Box(
+                                            modifier = Modifier
+                                                .size(38.dp)
+                                                .clip(CircleShape)
+                                                .background(Color.Black.copy(alpha = 0.42f))
+                                                .clickable(onClick = onClose),
+                                            contentAlignment = Alignment.Center
+                                        ) {
+                                            Icon(Icons.Rounded.KeyboardArrowDown, "Collapse", tint = Color.White, modifier = Modifier.size(24.dp))
+                                        }
                                     }
-                                )
-                        ) {
-                            NowPlayingMediaStage(
-                                viewModel = viewModel,
-                                song = song,
-                                artData = artData,
-                                visualMedia = visualMedia,
-                                isVideoModeActive = isVideoModeActive,
-                                isPlaying = isPlaying,
-                                currentPosition = currentPosition,
-                                duration = duration,
-                                accentColor = palette.effectiveAccent,
-                                gesturesEnabled = gesturesEnabled,
-                                isGuest = isGuest,
-                                shape = RectangleShape,
-                                onSeek = onSeek,
-                                onPlayPause = onPlayPause,
-                                onSkipNext = onSkipNext,
-                                onSkipPrevious = onSkipPrevious,
-                                onTap = { theatreFocusMode = !theatreFocusMode },
-                                videoResizeMode = AspectRatioFrameLayout.RESIZE_MODE_FIT,
-                                modifier = Modifier.fillMaxSize()
-                            )
-                        }
+                                }
 
-                        // Top-left Collapse over stage (respects cutout/systemBars in landscape)
-                        androidx.compose.animation.AnimatedVisibility(
-                            visible = !theatreFocusMode,
-                            enter = fadeIn(tween(240)),
-                            exit = fadeOut(tween(240)),
-                            modifier = Modifier
-                                .align(Alignment.TopStart)
-                                .systemBarsPadding()
-                                .padding(start = 18.dp, top = 12.dp)
-                        ) {
+                                Spacer(modifier = Modifier.height(8.dp))
+
+                                // 16:9 Crisp Cinema Video Card (No leaking artwork, crisp 16:9 frame)
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .aspectRatio(16f / 9f)
+                                        .clip(RoundedCornerShape(18.dp))
+                                        .background(Color.Black)
+                                ) {
+                                    NowPlayingMediaStage(
+                                        viewModel = viewModel,
+                                        song = song,
+                                        artData = artData,
+                                        visualMedia = visualMedia,
+                                        isVideoModeActive = true,
+                                        isPlaying = isPlaying,
+                                        currentPosition = currentPosition,
+                                        duration = duration,
+                                        accentColor = palette.effectiveAccent,
+                                        gesturesEnabled = gesturesEnabled,
+                                        isGuest = isGuest,
+                                        shape = RoundedCornerShape(18.dp),
+                                        onSeek = onSeek,
+                                        onPlayPause = onPlayPause,
+                                        onSkipNext = onSkipNext,
+                                        onSkipPrevious = onSkipPrevious,
+                                        onTap = { theatreFocusMode = !theatreFocusMode },
+                                        videoResizeMode = AspectRatioFrameLayout.RESIZE_MODE_FIT,
+                                        modifier = Modifier.fillMaxSize()
+                                    )
+                                }
+
+                                // Lower Stage Area: Deep Cinema Ambient Mist across the stage bottom
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .weight(1f)
+                                        .padding(top = 8.dp)
+                                ) {
+                                    Box(
+                                        modifier = Modifier
+                                            .fillMaxSize()
+                                            .clip(RoundedCornerShape(16.dp))
+                                            .background(
+                                                Brush.verticalGradient(
+                                                    0.0f to Color.Transparent,
+                                                    0.35f to palette.effectiveAccent.copy(alpha = 0.15f),
+                                                    0.70f to palette.secondaryBg.copy(alpha = 0.32f),
+                                                    1.0f to palette.primaryBg.copy(alpha = 0.60f)
+                                                )
+                                            )
+                                    )
+                                }
+                            }
+                        } else {
+                            // Audio mode: Full-height artwork with gentle horizontal fade mask
                             Box(
                                 modifier = Modifier
-                                    .size(38.dp)
-                                    .clip(CircleShape)
-                                    .background(Color.Black.copy(alpha = 0.42f))
-                                    .clickable(onClick = onClose),
-                                contentAlignment = Alignment.Center
+                                    .size(width = artWidth, height = viewportHeight)
+                                    .align(Alignment.TopStart)
+                                    .graphicsLayer {
+                                        compositingStrategy = CompositingStrategy.Offscreen
+                                        scaleX = stageScale
+                                        scaleY = stageScale
+                                    }
+                                    .drawWithContent {
+                                        drawContent()
+                                        drawRect(brush = horizontalStageFadeMask, blendMode = BlendMode.DstIn)
+                                    }
                             ) {
-                                Icon(Icons.Rounded.KeyboardArrowDown, "Collapse", tint = Color.White, modifier = Modifier.size(24.dp))
+                                NowPlayingMediaStage(
+                                    viewModel = viewModel,
+                                    song = song,
+                                    artData = artData,
+                                    visualMedia = visualMedia,
+                                    isVideoModeActive = false,
+                                    isPlaying = isPlaying,
+                                    currentPosition = currentPosition,
+                                    duration = duration,
+                                    accentColor = palette.effectiveAccent,
+                                    gesturesEnabled = gesturesEnabled,
+                                    isGuest = isGuest,
+                                    shape = RectangleShape,
+                                    onSeek = onSeek,
+                                    onPlayPause = onPlayPause,
+                                    onSkipNext = onSkipNext,
+                                    onSkipPrevious = onSkipPrevious,
+                                    onTap = { theatreFocusMode = !theatreFocusMode },
+                                    videoResizeMode = AspectRatioFrameLayout.RESIZE_MODE_FIT,
+                                    modifier = Modifier.fillMaxSize()
+                                )
+                            }
+
+                            // Top-left Collapse over stage (respects cutout/systemBars in landscape)
+                            androidx.compose.animation.AnimatedVisibility(
+                                visible = !theatreFocusMode,
+                                enter = fadeIn(tween(240)),
+                                exit = fadeOut(tween(240)),
+                                modifier = Modifier
+                                    .align(Alignment.TopStart)
+                                    .systemBarsPadding()
+                                    .padding(start = 18.dp, top = 12.dp)
+                            ) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(38.dp)
+                                        .clip(CircleShape)
+                                        .background(Color.Black.copy(alpha = 0.42f))
+                                        .clickable(onClick = onClose),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Icon(Icons.Rounded.KeyboardArrowDown, "Collapse", tint = Color.White, modifier = Modifier.size(24.dp))
+                                }
                             }
                         }
 

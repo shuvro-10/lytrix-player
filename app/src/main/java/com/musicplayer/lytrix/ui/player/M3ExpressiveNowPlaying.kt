@@ -295,6 +295,7 @@ fun M3ExpressiveNowPlayingFullScreen(
     val hasDisplayableLyrics = !currentLyrics.isNullOrBlank() && currentLyrics != "LOADING_LYRICS_STATE"
 
     val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+    val currentResizeMode by viewModel.videoResizeMode.collectAsState()
     val activityContext = context as? Activity
 
     DisposableEffect(Unit) {
@@ -618,7 +619,7 @@ fun M3ExpressiveNowPlayingFullScreen(
                                     .fillMaxHeight()
                             )
                         } else {
-                        // Left Column: Square Artwork + Tonal Dock (Static Cover / Apple Music 1:1)
+                        // Left Column: 16:9 Floating Video Card OR Square Artwork + Tonal Dock
                         Column(
                             modifier = Modifier
                                 .weight(0.42f)
@@ -626,48 +627,92 @@ fun M3ExpressiveNowPlayingFullScreen(
                             horizontalAlignment = Alignment.CenterHorizontally,
                             verticalArrangement = Arrangement.Center
                         ) {
-                            Box(
-                                modifier = Modifier
-                                    .weight(1f, fill = false)
-                                    .aspectRatio(1f)
-                                    .padding(vertical = 4.dp),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                NextSongTransitionArt(
-                                    currentSong = song,
-                                    nextSong = nextSong,
-                                    currentPositionMs = currentPosition,
-                                    durationMs = duration,
-                                    isPlaying = isPlaying,
-                                    isTransitionEnabled = isTransitionEnabled,
-                                    artData = artData,
-                                    nextArtData = nextArtData,
-                                    manualSkipTrigger = manualSkipTrigger,
-                                    onLongPress = null,
-                                    onSkipNext = performSkipNext,
-                                    onSkipPrevious = {
-                                        onSkipPrevious()
-                                        viewModel.forceSyncToFirebase()
-                                    },
-                                    onSeek = { seekPos ->
-                                        onSeek(seekPos)
-                                        viewModel.forceSyncToFirebase()
-                                    },
-                                    onPlayPause = {
-                                        onPlayPause()
-                                        viewModel.forceSyncToFirebase()
-                                    },
-                                    gesturesEnabled = gesturesEnabled,
-                                    isGuest = isGuest,
-                                    visualMedia = visualMedia.takeIf { it?.type == com.musicplayer.lytrix.spotify.canvas.VisualMediaType.APPLE_MUSIC_MOTION },
+                            if (isVideoModeActive) {
+                                // 16:9 Floating Video Card for M3 Expressive Landscape
+                                Box(
                                     modifier = Modifier
-                                        .fillMaxSize()
-                                        .graphicsLayer {
-                                            scaleX = artScale
-                                            scaleY = artScale
-                                            clip = false
-                                        }
-                                )
+                                        .weight(1f, fill = false)
+                                        .fillMaxWidth()
+                                        .aspectRatio(16f / 9f)
+                                        .padding(vertical = 4.dp)
+                                        .clip(RoundedCornerShape(22.dp))
+                                        .background(Color.Black),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    NowPlayingMediaStage(
+                                        viewModel = viewModel,
+                                        song = song,
+                                        artData = artData,
+                                        visualMedia = visualMedia,
+                                        isVideoModeActive = true,
+                                        isPlaying = isPlaying,
+                                        currentPosition = currentPosition,
+                                        duration = duration,
+                                        accentColor = expressiveScheme.primary,
+                                        gesturesEnabled = gesturesEnabled,
+                                        isGuest = isGuest,
+                                        shape = RoundedCornerShape(22.dp),
+                                        onSeek = { seekPos ->
+                                            onSeek(seekPos)
+                                            viewModel.forceSyncToFirebase()
+                                        },
+                                        onPlayPause = {
+                                            onPlayPause()
+                                            viewModel.forceSyncToFirebase()
+                                        },
+                                        onSkipNext = performSkipNext,
+                                        onSkipPrevious = {
+                                            onSkipPrevious()
+                                            viewModel.forceSyncToFirebase()
+                                        },
+                                        videoResizeMode = currentResizeMode,
+                                        modifier = Modifier.fillMaxSize()
+                                    )
+                                }
+                            } else {
+                                Box(
+                                    modifier = Modifier
+                                        .weight(1f, fill = false)
+                                        .aspectRatio(1f)
+                                        .padding(vertical = 4.dp),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    NextSongTransitionArt(
+                                        currentSong = song,
+                                        nextSong = nextSong,
+                                        currentPositionMs = currentPosition,
+                                        durationMs = duration,
+                                        isPlaying = isPlaying,
+                                        isTransitionEnabled = isTransitionEnabled,
+                                        artData = artData,
+                                        nextArtData = nextArtData,
+                                        manualSkipTrigger = manualSkipTrigger,
+                                        onLongPress = null,
+                                        onSkipNext = performSkipNext,
+                                        onSkipPrevious = {
+                                            onSkipPrevious()
+                                            viewModel.forceSyncToFirebase()
+                                        },
+                                        onSeek = { seekPos ->
+                                            onSeek(seekPos)
+                                            viewModel.forceSyncToFirebase()
+                                        },
+                                        onPlayPause = {
+                                            onPlayPause()
+                                            viewModel.forceSyncToFirebase()
+                                        },
+                                        gesturesEnabled = gesturesEnabled,
+                                        isGuest = isGuest,
+                                        visualMedia = visualMedia.takeIf { it?.type == com.musicplayer.lytrix.spotify.canvas.VisualMediaType.APPLE_MUSIC_MOTION },
+                                        modifier = Modifier
+                                            .fillMaxSize()
+                                            .graphicsLayer {
+                                                scaleX = artScale
+                                                scaleY = artScale
+                                                clip = false
+                                            }
+                                    )
+                                }
                             }
 
                             Spacer(modifier = Modifier.height(10.dp))

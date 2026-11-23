@@ -5,6 +5,7 @@ package com.musicplayer.lytrix.ui
 
 import com.musicplayer.lytrix.ui.component.NowPlayingVideoOverlayControls
 import com.musicplayer.lytrix.ui.player.NowPlayingLandscapeVideoFullScreen
+import com.musicplayer.lytrix.ui.player.NowPlayingMediaStage
 
 import android.app.Activity
 import android.content.Context
@@ -910,7 +911,8 @@ if (videoStageActive) {
                                 .padding(top = statusBarHeight + 56.dp, bottom = 8.dp),
                             contentAlignment = Alignment.Center
                         ) {
-                            val idealHeight = screenWidth / videoAspect
+                            val containerWidth = maxWidth
+                            val idealHeight = containerWidth / videoAspect
                             val boxHeight = minOf(idealHeight, maxHeight)
                             val isHeightLimited = boxHeight < idealHeight - 1.dp
 
@@ -931,7 +933,7 @@ if (videoStageActive) {
                                 },
                                 swipeEnabled = false,
                                 modifier = Modifier
-                                    .requiredSize(screenWidth, boxHeight)
+                                    .requiredSize(containerWidth, boxHeight)
                                     .background(Color.Black)
                             ) {
                                 if (isHeightLimited) {
@@ -1584,7 +1586,7 @@ if (videoStageActive) {
                 .verticalScroll(scrollState)
         ) {
             if (isLandscape) {
-                // Immersive-style Apple Music Landscape: Edge-to-edge Left 48% full-height cover with horizontal fade + Right 52% Controls
+                // Immersive-style Apple Music Landscape: Edge-to-edge Left 48% with 16:9 Crisp Video + Atmospheric Fog OR Artwork with Horizontal Fade + Right 52% Controls
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -1593,27 +1595,104 @@ if (videoStageActive) {
                 ) {
                     val artWidth = totalViewportWidth * 0.48f
 
-                    // Left 48% Edge-to-Edge Stage (Full Height + Smooth Horizontal Fade)
-                    Box(
-                        modifier = Modifier
-                            .size(width = artWidth, height = totalViewportHeight)
-                            .align(Alignment.TopStart)
-                    ) {
-                        stageBlock(Modifier.fillMaxSize(), true)
-                    }
+                    if (videoStageActive) {
+                        // Left 48% Crisp 16:9 Video Box + Deep Atmospheric Cloud Mist underneath
+                        Column(
+                            modifier = Modifier
+                                .size(width = artWidth, height = totalViewportHeight)
+                                .align(Alignment.TopStart)
+                                .systemBarsPadding()
+                                .padding(start = 18.dp, end = 16.dp, top = 12.dp, bottom = 12.dp),
+                            verticalArrangement = Arrangement.SpaceBetween,
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            // Top Row: Collapse Button + Audio/Video Switcher
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                collapseButton(38.dp)
+                                modeSwitcherSlot()
+                            }
 
-                    // Top-left floating Collapse + Audio/Video Switcher over Left Stage
-                    Row(
-                        modifier = Modifier
-                            .width(artWidth)
-                            .align(Alignment.TopStart)
-                            .systemBarsPadding()
-                            .padding(start = 18.dp, end = 16.dp, top = 12.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        collapseButton(38.dp)
-                        modeSwitcherSlot()
+                            Spacer(modifier = Modifier.height(8.dp))
+
+                            // 16:9 Crisp Video Card (100% crisp without any fades/cuts)
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .aspectRatio(16f / 9f)
+                                    .clip(RoundedCornerShape(18.dp))
+                                    .background(Color.Black)
+                            ) {
+                                NowPlayingMediaStage(
+                                    viewModel = viewModel,
+                                    song = song,
+                                    artData = artData,
+                                    visualMedia = visualMedia,
+                                    isVideoModeActive = true,
+                                    isPlaying = isPlaying,
+                                    currentPosition = currentPosition,
+                                    duration = duration,
+                                    accentColor = effectiveAccent,
+                                    gesturesEnabled = playerGesturesEnabled,
+                                    isGuest = isGuest,
+                                    shape = RoundedCornerShape(18.dp),
+                                    onSeek = onSeek,
+                                    onPlayPause = onPlayPause,
+                                    onSkipNext = onSkipNext,
+                                    onSkipPrevious = onSkipPrevious,
+                                    videoResizeMode = currentResizeMode,
+                                    modifier = Modifier.fillMaxSize()
+                                )
+                            }
+
+                            // Lower Stage Area: Atmospheric Cloud / Fog Gradient spreading across the bottom
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .weight(1f)
+                                    .padding(top = 8.dp)
+                            ) {
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                        .clip(RoundedCornerShape(16.dp))
+                                        .background(
+                                            Brush.verticalGradient(
+                                                0.0f to Color.Transparent,
+                                                0.35f to effectiveAccent.copy(alpha = 0.14f),
+                                                0.70f to secondaryBgColor.copy(alpha = 0.38f),
+                                                1.0f to primaryBgColor.copy(alpha = 0.58f)
+                                            )
+                                        )
+                                )
+                            }
+                        }
+                    } else {
+                        // Left 48% Edge-to-Edge Stage (Full Height + Smooth Horizontal Fade for Artwork)
+                        Box(
+                            modifier = Modifier
+                                .size(width = artWidth, height = totalViewportHeight)
+                                .align(Alignment.TopStart)
+                        ) {
+                            stageBlock(Modifier.fillMaxSize(), true)
+                        }
+
+                        // Top-left floating Collapse + Audio/Video Switcher over Left Stage
+                        Row(
+                            modifier = Modifier
+                                .width(artWidth)
+                                .align(Alignment.TopStart)
+                                .systemBarsPadding()
+                                .padding(start = 18.dp, end = 16.dp, top = 12.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            collapseButton(38.dp)
+                            modeSwitcherSlot()
+                        }
                     }
 
                     // Right 52% Controls Column
