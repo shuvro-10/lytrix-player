@@ -5,6 +5,7 @@ package com.musicplayer.lytrix.ui
 
 import com.musicplayer.lytrix.ui.component.NowPlayingVideoOverlayControls
 import com.musicplayer.lytrix.ui.player.NowPlayingLandscapeVideoFullScreen
+import com.musicplayer.lytrix.ui.player.NowPlayingMediaStage
 
 import android.app.Activity
 import android.content.Context
@@ -1594,13 +1595,56 @@ if (videoStageActive) {
                 ) {
                     val artWidth = totalViewportWidth * 0.48f
 
-                    // Left 48% Edge-to-Edge Stage (Full Height + Smooth Horizontal Fade)
-                    Box(
-                        modifier = Modifier
-                            .size(width = artWidth, height = totalViewportHeight)
-                            .align(Alignment.TopStart)
-                    ) {
-                        stageBlock(Modifier.fillMaxSize(), true)
+                    if (videoStageActive) {
+                        // Left 48% Floating 16:9 Video Card
+                        Box(
+                            modifier = Modifier
+                                .size(width = artWidth, height = totalViewportHeight)
+                                .align(Alignment.TopStart)
+                                .systemBarsPadding()
+                                .padding(start = 18.dp, end = 16.dp, top = 12.dp, bottom = 12.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .aspectRatio(16f / 9f)
+                                    .align(Alignment.Center)
+                                    .clip(RoundedCornerShape(18.dp))
+                                    .background(Color.Black)
+                            ) {
+                                NowPlayingMediaStage(
+                                    viewModel = viewModel,
+                                    song = song,
+                                    artData = artData,
+                                    visualMedia = visualMedia,
+                                    isVideoModeActive = true,
+                                    isPlaying = isPlaying,
+                                    currentPosition = currentPosition,
+                                    duration = duration,
+                                    accentColor = effectiveAccent,
+                                    gesturesEnabled = playerGesturesEnabled,
+                                    isGuest = isGuest,
+                                    shape = RoundedCornerShape(18.dp),
+                                    onSeek = onSeek,
+                                    onPlayPause = onPlayPause,
+                                    onSkipNext = onSkipNext,
+                                    onSkipPrevious = onSkipPrevious,
+                                    onTap = {},
+                                    videoResizeMode = AspectRatioFrameLayout.RESIZE_MODE_FIT,
+                                    modifier = Modifier.fillMaxSize()
+                                )
+                            }
+                        }
+                    } else {
+                        // Left 48% Edge-to-Edge Stage (Full Height + Smooth Horizontal Fade)
+                        Box(
+                            modifier = Modifier
+                                .size(width = artWidth, height = totalViewportHeight)
+                                .align(Alignment.TopStart)
+                        ) {
+                            stageBlock(Modifier.fillMaxSize(), true)
+                        }
                     }
 
                     // Top-left floating Collapse + Audio/Video Switcher over Left Stage

@@ -25,6 +25,7 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.material3.ripple
 import com.musicplayer.lytrix.ui.component.tactileSpringPress
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
@@ -665,48 +666,84 @@ fun CinemaNowPlayingFullScreen(
                         // Lytrix ImmersiveLandscape port: Left 48% Stage with soft horizontal fade, Right 52% Controls
                         val artWidth = viewportWidth * 0.48f
 
-                        Box(
-                            modifier = Modifier
-                                .size(width = artWidth, height = viewportHeight)
-                                .align(Alignment.TopStart)
-                                .then(
-                                    if (isVideoModeActive) {
-                                        Modifier.background(Color.Black.copy(alpha = 0.35f))
-                                    } else {
-                                        Modifier
-                                            .graphicsLayer {
-                                                compositingStrategy = CompositingStrategy.Offscreen
-                                                scaleX = stageScale
-                                                scaleY = stageScale
-                                            }
-                                            .drawWithContent {
-                                                drawContent()
-                                                drawRect(brush = horizontalStageFadeMask, blendMode = BlendMode.DstIn)
-                                            }
+                        if (isVideoModeActive) {
+                            Box(
+                                modifier = Modifier
+                                    .size(width = artWidth, height = viewportHeight)
+                                    .align(Alignment.TopStart)
+                                    .systemBarsPadding()
+                                    .padding(start = 18.dp, end = 16.dp, top = 12.dp, bottom = 12.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .aspectRatio(16f / 9f)
+                                        .align(Alignment.Center)
+                                        .clip(RoundedCornerShape(18.dp))
+                                        .background(Color.Black)
+                                ) {
+                                    NowPlayingMediaStage(
+                                        viewModel = viewModel,
+                                        song = song,
+                                        artData = artData,
+                                        visualMedia = visualMedia,
+                                        isVideoModeActive = true,
+                                        isPlaying = isPlaying,
+                                        currentPosition = currentPosition,
+                                        duration = duration,
+                                        accentColor = palette.effectiveAccent,
+                                        gesturesEnabled = gesturesEnabled,
+                                        isGuest = isGuest,
+                                        shape = RoundedCornerShape(18.dp),
+                                        onSeek = onSeek,
+                                        onPlayPause = onPlayPause,
+                                        onSkipNext = onSkipNext,
+                                        onSkipPrevious = onSkipPrevious,
+                                        onTap = { theatreFocusMode = !theatreFocusMode },
+                                        videoResizeMode = AspectRatioFrameLayout.RESIZE_MODE_FIT,
+                                        modifier = Modifier.fillMaxSize()
+                                    )
+                                }
+                            }
+                        } else {
+                            // Audio mode: Full-height artwork with gentle horizontal fade mask
+                            Box(
+                                modifier = Modifier
+                                    .size(width = artWidth, height = viewportHeight)
+                                    .align(Alignment.TopStart)
+                                    .graphicsLayer {
+                                        compositingStrategy = CompositingStrategy.Offscreen
+                                        scaleX = stageScale
+                                        scaleY = stageScale
                                     }
+                                    .drawWithContent {
+                                        drawContent()
+                                        drawRect(brush = horizontalStageFadeMask, blendMode = BlendMode.DstIn)
+                                    }
+                            ) {
+                                NowPlayingMediaStage(
+                                    viewModel = viewModel,
+                                    song = song,
+                                    artData = artData,
+                                    visualMedia = visualMedia,
+                                    isVideoModeActive = false,
+                                    isPlaying = isPlaying,
+                                    currentPosition = currentPosition,
+                                    duration = duration,
+                                    accentColor = palette.effectiveAccent,
+                                    gesturesEnabled = gesturesEnabled,
+                                    isGuest = isGuest,
+                                    shape = RectangleShape,
+                                    onSeek = onSeek,
+                                    onPlayPause = onPlayPause,
+                                    onSkipNext = onSkipNext,
+                                    onSkipPrevious = onSkipPrevious,
+                                    onTap = { theatreFocusMode = !theatreFocusMode },
+                                    videoResizeMode = AspectRatioFrameLayout.RESIZE_MODE_FIT,
+                                    modifier = Modifier.fillMaxSize()
                                 )
-                        ) {
-                            NowPlayingMediaStage(
-                                viewModel = viewModel,
-                                song = song,
-                                artData = artData,
-                                visualMedia = visualMedia,
-                                isVideoModeActive = isVideoModeActive,
-                                isPlaying = isPlaying,
-                                currentPosition = currentPosition,
-                                duration = duration,
-                                accentColor = palette.effectiveAccent,
-                                gesturesEnabled = gesturesEnabled,
-                                isGuest = isGuest,
-                                shape = RectangleShape,
-                                onSeek = onSeek,
-                                onPlayPause = onPlayPause,
-                                onSkipNext = onSkipNext,
-                                onSkipPrevious = onSkipPrevious,
-                                onTap = { theatreFocusMode = !theatreFocusMode },
-                                videoResizeMode = AspectRatioFrameLayout.RESIZE_MODE_FIT,
-                                modifier = Modifier.fillMaxSize()
-                            )
+                            }
                         }
 
                         // Top-left Collapse over stage (respects cutout/systemBars in landscape)
