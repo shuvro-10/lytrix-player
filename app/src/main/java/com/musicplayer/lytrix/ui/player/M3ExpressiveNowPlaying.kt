@@ -622,7 +622,7 @@ fun M3ExpressiveNowPlayingFullScreen(
                         // Left Column: 16:9 Floating Video Card OR Square Artwork + Tonal Dock
                         Column(
                             modifier = Modifier
-                                .weight(0.42f)
+                                .weight(if (isVideoModeActive) 0.50f else 0.42f)
                                 .fillMaxHeight(),
                             horizontalAlignment = Alignment.CenterHorizontally,
                             verticalArrangement = Arrangement.Center
@@ -725,7 +725,7 @@ fun M3ExpressiveNowPlayingFullScreen(
                         // Right Column: Top Header + Title/Artist + Live Lyrics + Wavy Seekbar + V9 Controls
                         Column(
                             modifier = Modifier
-                                .weight(0.58f)
+                                .weight(if (isVideoModeActive) 0.50f else 0.58f)
                                 .fillMaxHeight()
                                 .padding(vertical = 4.dp),
                             verticalArrangement = Arrangement.SpaceBetween,

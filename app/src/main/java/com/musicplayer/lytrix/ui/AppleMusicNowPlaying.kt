@@ -1586,7 +1586,7 @@ if (videoStageActive) {
                 .verticalScroll(scrollState)
         ) {
             if (isLandscape) {
-                // Immersive-style Apple Music Landscape: Edge-to-edge Left 48% with 16:9 Crisp Video + Atmospheric Fog OR Artwork with Horizontal Fade + Right 52% Controls
+                // Immersive-style Apple Music Landscape: Edge-to-edge Left 48% with 16:9 Crisp Video OR Artwork + Right 52% Controls
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -1596,34 +1596,20 @@ if (videoStageActive) {
                     val artWidth = totalViewportWidth * 0.48f
 
                     if (videoStageActive) {
-                        // Left 48% Crisp 16:9 Video Box + Deep Atmospheric Cloud Mist underneath
-                        Column(
+                        // Left 48% Stage with centered 16:9 Video Card
+                        Box(
                             modifier = Modifier
                                 .size(width = artWidth, height = totalViewportHeight)
                                 .align(Alignment.TopStart)
                                 .systemBarsPadding()
-                                .padding(start = 18.dp, end = 16.dp, top = 12.dp, bottom = 12.dp),
-                            verticalArrangement = Arrangement.SpaceBetween,
-                            horizontalAlignment = Alignment.CenterHorizontally
+                                .padding(start = 18.dp, end = 16.dp, top = 48.dp, bottom = 12.dp)
                         ) {
-                            // Top Row: Collapse Button + Audio/Video Switcher
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.SpaceBetween
-                            ) {
-                                collapseButton(38.dp)
-                                modeSwitcherSlot()
-                            }
-
-                            Spacer(modifier = Modifier.height(8.dp))
-
-                            // 16:9 Crisp Video Card (100% crisp without any fades/cuts)
                             Box(
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .aspectRatio(16f / 9f)
-                                    .clip(RoundedCornerShape(18.dp))
+                                    .align(Alignment.Center)
+                                    .clip(RoundedCornerShape(20.dp))
                                     .background(Color.Black)
                             ) {
                                 NowPlayingMediaStage(
@@ -1638,35 +1624,13 @@ if (videoStageActive) {
                                     accentColor = effectiveAccent,
                                     gesturesEnabled = playerGesturesEnabled,
                                     isGuest = isGuest,
-                                    shape = RoundedCornerShape(18.dp),
+                                    shape = RoundedCornerShape(20.dp),
                                     onSeek = onSeek,
                                     onPlayPause = onPlayPause,
                                     onSkipNext = onSkipNext,
                                     onSkipPrevious = onSkipPrevious,
                                     videoResizeMode = currentResizeMode,
                                     modifier = Modifier.fillMaxSize()
-                                )
-                            }
-
-                            // Lower Stage Area: Atmospheric Cloud / Fog Gradient spreading across the bottom
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .weight(1f)
-                                    .padding(top = 8.dp)
-                            ) {
-                                Box(
-                                    modifier = Modifier
-                                        .fillMaxSize()
-                                        .clip(RoundedCornerShape(16.dp))
-                                        .background(
-                                            Brush.verticalGradient(
-                                                0.0f to Color.Transparent,
-                                                0.35f to effectiveAccent.copy(alpha = 0.14f),
-                                                0.70f to secondaryBgColor.copy(alpha = 0.38f),
-                                                1.0f to primaryBgColor.copy(alpha = 0.58f)
-                                            )
-                                        )
                                 )
                             }
                         }
@@ -1679,18 +1643,20 @@ if (videoStageActive) {
                         ) {
                             stageBlock(Modifier.fillMaxSize(), true)
                         }
+                    }
 
-                        // Top-left floating Collapse + Audio/Video Switcher over Left Stage
-                        Row(
-                            modifier = Modifier
-                                .width(artWidth)
-                                .align(Alignment.TopStart)
-                                .systemBarsPadding()
-                                .padding(start = 18.dp, end = 16.dp, top = 12.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.SpaceBetween
-                        ) {
+                    // Global Top Bar in Landscape (Centered Mode Switcher, Clean & Non-obstructive)
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .align(Alignment.TopCenter)
+                            .systemBarsPadding()
+                            .padding(start = 18.dp, end = 24.dp, top = 10.dp)
+                    ) {
+                        Box(modifier = Modifier.align(Alignment.CenterStart)) {
                             collapseButton(38.dp)
+                        }
+                        Box(modifier = Modifier.align(Alignment.Center)) {
                             modeSwitcherSlot()
                         }
                     }
@@ -1702,7 +1668,7 @@ if (videoStageActive) {
                             .fillMaxWidth(0.52f)
                             .align(Alignment.CenterEnd)
                             .systemBarsPadding()
-                            .padding(start = 12.dp, end = 24.dp, top = 10.dp, bottom = 10.dp),
+                            .padding(start = 12.dp, end = 24.dp, top = 48.dp, bottom = 10.dp),
                         verticalArrangement = Arrangement.SpaceBetween,
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {

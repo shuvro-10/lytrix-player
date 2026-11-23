@@ -1459,7 +1459,7 @@ fun NowPlayingFullScreen(
 
                 if (isLandscape) {
                     Row(modifier = Modifier.weight(1f).fillMaxWidth().padding(bottom = 16.dp), verticalAlignment = Alignment.CenterVertically) {
-                        Box(modifier = Modifier.weight(0.45f).fillMaxHeight(), contentAlignment = Alignment.Center) {
+                        Box(modifier = Modifier.weight(if (isVideoModeActive) 0.50f else 0.45f).fillMaxHeight(), contentAlignment = Alignment.Center) {
                             if (isVideoModeActive) {
                                 val currentResizeMode by viewModel.videoResizeMode.collectAsState()
                                 Box(
@@ -1569,7 +1569,7 @@ fun NowPlayingFullScreen(
 
                         Spacer(modifier = Modifier.width(32.dp))
 
-                        Column(modifier = Modifier.weight(0.55f).fillMaxHeight().verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.SpaceEvenly) {
+                        Column(modifier = Modifier.weight(if (isVideoModeActive) 0.50f else 0.55f).fillMaxHeight().verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.SpaceEvenly) {
                             Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
                                 Column(modifier = Modifier.weight(1f)) {
                                     Text(song.title, fontSize = 20.sp, fontWeight = FontWeight.Bold, color = onBackdropColor, maxLines = 1, overflow = TextOverflow.Ellipsis)

@@ -667,47 +667,20 @@ fun CinemaNowPlayingFullScreen(
                         val artWidth = viewportWidth * 0.48f
 
                         if (isVideoModeActive) {
-                            Column(
+                            Box(
                                 modifier = Modifier
                                     .size(width = artWidth, height = viewportHeight)
                                     .align(Alignment.TopStart)
                                     .systemBarsPadding()
-                                    .padding(start = 18.dp, end = 16.dp, top = 12.dp, bottom = 12.dp),
-                                verticalArrangement = Arrangement.SpaceBetween,
-                                horizontalAlignment = Alignment.CenterHorizontally
+                                    .padding(start = 18.dp, end = 16.dp, top = 12.dp, bottom = 12.dp)
                             ) {
-                                // Top row: Collapse button (auto-hides in theatre focus mode)
-                                Row(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.SpaceBetween
-                                ) {
-                                    androidx.compose.animation.AnimatedVisibility(
-                                        visible = !theatreFocusMode,
-                                        enter = fadeIn(tween(240)),
-                                        exit = fadeOut(tween(240))
-                                    ) {
-                                        Box(
-                                            modifier = Modifier
-                                                .size(38.dp)
-                                                .clip(CircleShape)
-                                                .background(Color.Black.copy(alpha = 0.42f))
-                                                .clickable(onClick = onClose),
-                                            contentAlignment = Alignment.Center
-                                        ) {
-                                            Icon(Icons.Rounded.KeyboardArrowDown, "Collapse", tint = Color.White, modifier = Modifier.size(24.dp))
-                                        }
-                                    }
-                                }
-
-                                Spacer(modifier = Modifier.height(8.dp))
-
-                                // 16:9 Crisp Cinema Video Card (No leaking artwork, crisp 16:9 frame)
+                                // 16:9 Crisp Cinema Video Card vertically centered without any artificial lower box
                                 Box(
                                     modifier = Modifier
                                         .fillMaxWidth()
                                         .aspectRatio(16f / 9f)
-                                        .clip(RoundedCornerShape(18.dp))
+                                        .align(Alignment.Center)
+                                        .clip(RoundedCornerShape(20.dp))
                                         .background(Color.Black)
                                 ) {
                                     NowPlayingMediaStage(
@@ -722,7 +695,7 @@ fun CinemaNowPlayingFullScreen(
                                         accentColor = palette.effectiveAccent,
                                         gesturesEnabled = gesturesEnabled,
                                         isGuest = isGuest,
-                                        shape = RoundedCornerShape(18.dp),
+                                        shape = RoundedCornerShape(20.dp),
                                         onSeek = onSeek,
                                         onPlayPause = onPlayPause,
                                         onSkipNext = onSkipNext,
@@ -733,26 +706,23 @@ fun CinemaNowPlayingFullScreen(
                                     )
                                 }
 
-                                // Lower Stage Area: Deep Cinema Ambient Mist across the stage bottom
-                                Box(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .weight(1f)
-                                        .padding(top = 8.dp)
+                                // Top-left Collapse button (auto-hides in theatre focus mode)
+                                androidx.compose.animation.AnimatedVisibility(
+                                    visible = !theatreFocusMode,
+                                    enter = fadeIn(tween(240)),
+                                    exit = fadeOut(tween(240)),
+                                    modifier = Modifier.align(Alignment.TopStart)
                                 ) {
                                     Box(
                                         modifier = Modifier
-                                            .fillMaxSize()
-                                            .clip(RoundedCornerShape(16.dp))
-                                            .background(
-                                                Brush.verticalGradient(
-                                                    0.0f to Color.Transparent,
-                                                    0.35f to palette.effectiveAccent.copy(alpha = 0.15f),
-                                                    0.70f to palette.secondaryBg.copy(alpha = 0.32f),
-                                                    1.0f to palette.primaryBg.copy(alpha = 0.60f)
-                                                )
-                                            )
-                                    )
+                                            .size(38.dp)
+                                            .clip(CircleShape)
+                                            .background(Color.Black.copy(alpha = 0.42f))
+                                            .clickable(onClick = onClose),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Icon(Icons.Rounded.KeyboardArrowDown, "Collapse", tint = Color.White, modifier = Modifier.size(24.dp))
+                                    }
                                 }
                             }
                         } else {
@@ -829,28 +799,36 @@ fun CinemaNowPlayingFullScreen(
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
                             AnimatedVisibility(visible = !theatreFocusMode, enter = fadeIn(tween(220)), exit = fadeOut(tween(220))) {
-                                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                                Column(
+                                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                                    horizontalAlignment = Alignment.CenterHorizontally,
+                                    modifier = Modifier.fillMaxWidth()
+                                ) {
+                                    // Top right action buttons (AOD / Menu)
                                     Row(
                                         modifier = Modifier.fillMaxWidth(),
-                                        horizontalArrangement = Arrangement.SpaceBetween,
+                                        horizontalArrangement = Arrangement.End,
                                         verticalAlignment = Alignment.CenterVertically
                                     ) {
-                                        AudioVideoModePill(
-                                            song = song,
-                                            isYtSong = isYtSong,
-                                            isVideoModeActive = isVideoModeActive,
-                                            isPlaying = isPlaying,
-                                            accentColor = palette.effectiveAccent,
-                                            contentColorOnAccent = palette.contentOnAccent,
-                                            onSetVideoMode = { if (it) viewModel.switchToVideoMode(song) else viewModel.switchToAudioMode(song) },
-                                            onPlayPause = onPlayPause,
-                                            onClose = onClose,
-                                            onPlayVideo = onPlayVideo,
-                                            fallbackTitle = "Cinema Mode",
-                                            isVideoHandoffPending = isVideoHandoffPending
-                                        )
                                         aodAndMenuButtons(36.dp)
                                     }
+
+                                    // Centered Audio/Video Mode Switcher right above the 144 kbps seam
+                                    AudioVideoModePill(
+                                        song = song,
+                                        isYtSong = isYtSong,
+                                        isVideoModeActive = isVideoModeActive,
+                                        isPlaying = isPlaying,
+                                        accentColor = palette.effectiveAccent,
+                                        contentColorOnAccent = palette.contentOnAccent,
+                                        onSetVideoMode = { if (it) viewModel.switchToVideoMode(song) else viewModel.switchToAudioMode(song) },
+                                        onPlayPause = onPlayPause,
+                                        onClose = onClose,
+                                        onPlayVideo = onPlayVideo,
+                                        fallbackTitle = "Cinema Mode",
+                                        isVideoHandoffPending = isVideoHandoffPending
+                                    )
+
                                     formatSeamBlock()
                                 }
                             }

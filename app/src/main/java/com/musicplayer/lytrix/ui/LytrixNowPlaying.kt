@@ -608,7 +608,7 @@ fun MeldNowPlayingFullScreen(
                 // Left Column: 16:9 Floating Video Card OR NextSongTransitionArt + 5 Toolbar Buttons
                 Column(
                     modifier = Modifier
-                        .weight(0.42f)
+                        .weight(if (isVideoModeActive) 0.50f else 0.42f)
                         .fillMaxHeight(),
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Center
@@ -809,157 +809,131 @@ fun MeldNowPlayingFullScreen(
                 // Right Column: Title/Artist + Capsule, Progress & Controls
                 Column(
                     modifier = Modifier
-                        .weight(0.58f)
+                        .weight(if (isVideoModeActive) 0.50f else 0.58f)
                         .fillMaxHeight()
                         .padding(vertical = 4.dp),
                     verticalArrangement = Arrangement.SpaceBetween,
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    // Header: Collapse + Title/Artist + (Video pill if YT) + [ Share | Fav ]
+                    // Header Row 1: Collapse + Centered Audio/Video Pill + [ Share | Fav ]
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(bottom = 6.dp),
+                            .padding(bottom = 4.dp),
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
+                        Box(
+                            modifier = Modifier
+                                .size(38.dp)
+                                .clip(CircleShape)
+                                .background(Color.White.copy(alpha = 0.12f))
+                                .clickable { onClose() },
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(Icons.Rounded.KeyboardArrowDown, contentDescription = "Collapse", tint = Color.White, modifier = Modifier.size(24.dp))
+                        }
+
+                        if (isYtSong) {
+                            com.musicplayer.lytrix.ui.player.AudioVideoModePill(
+                                song = song,
+                                isYtSong = isYtSong,
+                                isVideoModeActive = isVideoModeActive,
+                                isPlaying = isPlaying,
+                                accentColor = effectiveAccent,
+                                contentColorOnAccent = contentColorOnAccent,
+                                onSetVideoMode = { if (it) viewModel.switchToVideoMode(song) else viewModel.switchToAudioMode(song) },
+                                onPlayPause = onPlayPause,
+                                onClose = onClose,
+                                onPlayVideo = onPlayVideo,
+                                fallbackTitle = "Video Mode",
+                                isVideoHandoffPending = isVideoHandoffPending
+                            )
+                        }
+
+                        val shareShape = RoundedCornerShape(topStart = 50.dp, bottomStart = 50.dp, topEnd = 3.dp, bottomEnd = 3.dp)
+                        val favShape = RoundedCornerShape(topStart = 3.dp, bottomStart = 3.dp, topEnd = 50.dp, bottomEnd = 50.dp)
+
                         Row(
-                            modifier = Modifier.weight(1f),
+                            horizontalArrangement = Arrangement.spacedBy(4.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Box(
                                 modifier = Modifier
                                     .size(38.dp)
-                                    .clip(CircleShape)
-                                    .background(Color.White.copy(alpha = 0.12f))
-                                    .clickable { onClose() },
+                                    .clip(shareShape)
+                                    .background(effectiveAccent)
+                                    .clickable {
+                                        if (isAppOnlineSong) {
+                                            val isPodcast = song.filePath == "ONLINE_PODCAST" || song.filePath == "OFFLINE_PODCAST"
+                                            val isJioSaavn = song.albumArtUriString?.contains("saavn", ignoreCase = true) == true
+                                            shareOnlineSong(context, song, isPodcast, isJioSaavn)
+                                        } else {
+                                            shareLocalSong(context, song)
+                                        }
+                                    },
                                 contentAlignment = Alignment.Center
                             ) {
-                                Icon(Icons.Rounded.KeyboardArrowDown, contentDescription = "Collapse", tint = Color.White, modifier = Modifier.size(24.dp))
+                                Icon(Icons.Rounded.Share, contentDescription = "Share", tint = contentColorOnAccent, modifier = Modifier.size(18.dp))
                             }
 
-                            Spacer(modifier = Modifier.width(12.dp))
-
-                            Column(modifier = Modifier.weight(1f)) {
-                                Text(
-                                    text = song.title,
-                                    fontSize = 20.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    color = Color.White,
-                                    maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis,
-                                    modifier = Modifier.basicMarquee()
-                                )
-                                Spacer(modifier = Modifier.height(2.dp))
-                                ClickableText(
-                                    text = annotatedArtistString,
-                                    maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis,
-                                    onClick = { offset ->
-                                        if (isAppOnlineSong) {
-                                            val clickedArtist = annotatedArtistString.getStringAnnotations(tag = "ARTIST", start = offset, end = offset).firstOrNull()?.item ?: cleanArtistDisplayName(song.artist)
-                                            onClose()
-                                            val isAb = song.mediaType == "AUDIOBOOK" || song.filePath in listOf("ONLINE_AUDIOBOOK", "OFFLINE_AUDIOBOOK")
-                                            val isPod = song.mediaType == "PODCAST" || song.filePath in listOf("ONLINE_PODCAST", "OFFLINE_PODCAST")
-                                            val target = when {
-                                                isAb -> "AUDIOBOOK_$clickedArtist"
-                                                isPod && (song.channelId.isNullOrBlank() || !song.channelId!!.startsWith("UC")) -> "PODCAST_${song.album.takeIf { !it.isNullOrBlank() } ?: clickedArtist}"
-                                                !song.channelId.isNullOrBlank() -> song.channelId!!
-                                                else -> clickedArtist
-                                            }
-                                            onNavigateToArtist(target)
-                                        }
-                                    }
-                                )
-                            }
-                        }
-
-                        Spacer(modifier = Modifier.width(12.dp))
-
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            if (isYtSong) {
-                                Box(
-                                    modifier = Modifier
-                                        .height(38.dp)
-                                        .clip(RoundedCornerShape(19.dp))
-                                        .background(Color.White.copy(alpha = 0.12f))
-                                        .clickable {
-                                            if (viewModel.isInListenTogetherRoom() && !viewModel.isSong16by9(song)) {
-                                                android.widget.Toast.makeText(context, "Video mode for album tracks is disabled in Listen Together", android.widget.Toast.LENGTH_SHORT).show()
-                                                return@clickable
-                                            }
-                                            val activity = context as? android.app.Activity
-                                            if (activity != null) {
-                                                AdManager.showAdForVideo(activity, song.id.toString()) {
-                                                    viewModel.switchToVideoMode(song)
-                                                }
-                                            } else {
-                                                viewModel.switchToVideoMode(song)
-                                            }
-                                        }
-                                        .padding(horizontal = 12.dp),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    Row(verticalAlignment = Alignment.CenterVertically) {
-                                        if (isVideoHandoffPending) {
-                                            LytrixExpressiveSpinner(color = Color.White, size = 16.dp)
-                                        } else {
-                                            Icon(Icons.Rounded.SmartDisplay, contentDescription = "Video Mode", tint = Color.White, modifier = Modifier.size(18.dp))
-                                        }
-                                        Spacer(modifier = Modifier.width(6.dp))
-                                        Text(if (isVideoHandoffPending) "Loading..." else "Video", color = Color.White, fontSize = 12.sp, fontWeight = FontWeight.Bold)
-                                    }
-                                }
-                            }
-
-                            val shareShape = RoundedCornerShape(topStart = 50.dp, bottomStart = 50.dp, topEnd = 3.dp, bottomEnd = 3.dp)
-                            val favShape = RoundedCornerShape(topStart = 3.dp, bottomStart = 3.dp, topEnd = 50.dp, bottomEnd = 50.dp)
-
-                            Row(
-                                horizontalArrangement = Arrangement.spacedBy(4.dp),
-                                verticalAlignment = Alignment.CenterVertically
+                            Box(
+                                modifier = Modifier
+                                    .size(38.dp)
+                                    .clip(favShape)
+                                    .background(effectiveAccent)
+                                    .clickable { onToggleFavorite() },
+                                contentAlignment = Alignment.Center
                             ) {
-                                Box(
-                                    modifier = Modifier
-                                        .size(40.dp)
-                                        .clip(shareShape)
-                                        .background(effectiveAccent)
-                                        .clickable {
-                                            if (isAppOnlineSong) {
-                                                val isPodcast = song.filePath == "ONLINE_PODCAST" || song.filePath == "OFFLINE_PODCAST"
-                                                val isJioSaavn = song.albumArtUriString?.contains("saavn", ignoreCase = true) == true
-                                                shareOnlineSong(context, song, isPodcast, isJioSaavn)
-                                            } else {
-                                                shareLocalSong(context, song)
-                                            }
-                                        },
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    Icon(Icons.Rounded.Share, contentDescription = "Share", tint = contentColorOnAccent, modifier = Modifier.size(18.dp))
-                                }
-
-                                Box(
-                                    modifier = Modifier
-                                        .size(40.dp)
-                                        .clip(favShape)
-                                        .background(effectiveAccent)
-                                        .clickable { onToggleFavorite() },
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    com.musicplayer.lytrix.ui.icons.MorphingMetroIcon(
-                                        selected = displayIsFavorite,
-                                        outlinedIcon = com.musicplayer.lytrix.ui.icons.LytrixIcons.Outlined.FavoriteBorder,
-                                        filledIcon = com.musicplayer.lytrix.ui.icons.LytrixIcons.Filled.Favorite,
-                                        contentDescription = "Favorite",
-                                        tint = if (displayIsFavorite) Color(0xFFE53935) else contentColorOnAccent,
-                                        modifier = Modifier.size(20.dp)
-                                    )
-                                }
+                                com.musicplayer.lytrix.ui.icons.MorphingMetroIcon(
+                                    selected = displayIsFavorite,
+                                    outlinedIcon = com.musicplayer.lytrix.ui.icons.LytrixIcons.Outlined.FavoriteBorder,
+                                    filledIcon = com.musicplayer.lytrix.ui.icons.LytrixIcons.Filled.Favorite,
+                                    contentDescription = "Favorite",
+                                    tint = if (displayIsFavorite) Color(0xFFE53935) else contentColorOnAccent,
+                                    modifier = Modifier.size(20.dp)
+                                )
                             }
                         }
+                    }
+
+                    // Header Row 2: Uncrammed Full-Width Title and Artist
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = 4.dp),
+                        horizontalAlignment = Alignment.Start
+                    ) {
+                        Text(
+                            text = song.title,
+                            fontSize = 20.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                            modifier = Modifier.basicMarquee()
+                        )
+                        Spacer(modifier = Modifier.height(2.dp))
+                        ClickableText(
+                            text = annotatedArtistString,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                            onClick = { offset ->
+                                if (isAppOnlineSong) {
+                                    val clickedArtist = annotatedArtistString.getStringAnnotations(tag = "ARTIST", start = offset, end = offset).firstOrNull()?.item ?: cleanArtistDisplayName(song.artist)
+                                    onClose()
+                                    val isAb = song.mediaType == "AUDIOBOOK" || song.filePath in listOf("ONLINE_AUDIOBOOK", "OFFLINE_AUDIOBOOK")
+                                    val isPod = song.mediaType == "PODCAST" || song.filePath in listOf("ONLINE_PODCAST", "OFFLINE_PODCAST")
+                                    val target = when {
+                                        isAb -> "AUDIOBOOK_$clickedArtist"
+                                        isPod && (song.channelId.isNullOrBlank() || !song.channelId!!.startsWith("UC")) -> "PODCAST_${song.album.takeIf { !it.isNullOrBlank() } ?: clickedArtist}"
+                                        !song.channelId.isNullOrBlank() -> song.channelId!!
+                                        else -> clickedArtist
+                                    }
+                                    onNavigateToArtist(target)
+                                }
+                            }
+                        )
                     }
 
                     // Live Lyrics Preview (Karaoke + Standard)
