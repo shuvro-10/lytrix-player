@@ -5,7 +5,9 @@ package com.musicplayer.lytrix.ui
 
 import com.musicplayer.lytrix.ui.component.NowPlayingVideoOverlayControls
 
+import android.app.Activity
 import android.content.Context
+import android.content.pm.ActivityInfo
 import android.content.res.Configuration
 import android.media.AudioAttributes
 import android.media.AudioDeviceCallback
@@ -626,6 +628,15 @@ fun AppleMusicNowPlayingFullScreen(
     }
 
     val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+    val currentResizeMode by viewModel.videoResizeMode.collectAsState()
+    val activityContext = context as? Activity
+    DisposableEffect(Unit) {
+        onDispose {
+            if (activityContext?.requestedOrientation != ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED) {
+                activityContext?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
+            }
+        }
+    }
 
     BoxWithConstraints(
         modifier = Modifier
@@ -963,7 +974,7 @@ if (videoStageActive) {
                                     AndroidView(
                                         factory = { ctx ->
                                             (LayoutInflater.from(ctx).inflate(R.layout.apple_music_texture_player_view, null) as PlayerView).apply {
-                                                resizeMode = AspectRatioFrameLayout.RESIZE_MODE_FIT
+                                                resizeMode = currentResizeMode
                                                 isClickable = false
                                                 isFocusable = false
                                                 setOnTouchListener { _, _ -> false }
@@ -974,11 +985,12 @@ if (videoStageActive) {
                                             if (playerView.player != exoPlayer) {
                                                 playerView.player = exoPlayer
                                             }
+                                            playerView.resizeMode = currentResizeMode
                                             playerView.subtitleView?.visibility = android.view.View.GONE
                                         },
                                         modifier = Modifier.fillMaxSize()
                                     )
-                                    com.musicplayer.lytrix.ui.component.NowPlayingVideoOverlayControls()
+                                    com.musicplayer.lytrix.ui.component.NowPlayingVideoOverlayControls(viewModel = viewModel)
                                 }
                             }
                         }

@@ -9,7 +9,9 @@ import kotlin.math.abs
 import androidx.media3.common.PlaybackParameters
 
 import android.app.Activity
+import android.content.pm.ActivityInfo
 import android.content.res.Configuration
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateDpAsState
@@ -54,7 +56,11 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.ClickableText
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.automirrored.rounded.QueueMusic
+import androidx.compose.material.icons.filled.AspectRatio
+import androidx.compose.material.icons.filled.PictureInPictureAlt
+import androidx.compose.material3.IconButton
 import androidx.compose.material.icons.rounded.Aod
 import androidx.compose.material.icons.rounded.Equalizer
 import androidx.compose.material.icons.rounded.Headphones
@@ -307,11 +313,24 @@ fun M3ExpressiveNowPlayingFullScreen(
         }
     }
 
+    DisposableEffect(Unit) {
+        onDispose {
+            if (activityContext?.requestedOrientation != ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED) {
+                activityContext?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
+            }
+        }
+    }
+
     Box(modifier = Modifier.fillMaxSize()) {
         if (isLandscape && isVideoModeActive) {
             // 🔥 Landscape Fullscreen Video Player (Edge-to-edge with hidden system bars & gestures)
+            BackHandler(enabled = isLandscape && isVideoModeActive) {
+                activityContext?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+            }
+
             val isVideoPlayerReady by viewModel.isVideoPlayerReady.collectAsState()
             val videoExoPlayer = viewModel.getVideoPlayer()
+            val currentResizeMode by viewModel.videoResizeMode.collectAsState()
             var showControls by remember { mutableStateOf(true) }
 
             LaunchedEffect(showControls, isPlaying) {
@@ -360,7 +379,7 @@ fun M3ExpressiveNowPlayingFullScreen(
                                 isClickable = false
                                 isFocusable = false
                                 setOnTouchListener { _, _ -> false }
-                                resizeMode = AspectRatioFrameLayout.RESIZE_MODE_FIT
+                                resizeMode = currentResizeMode
                                 subtitleView?.visibility = android.view.View.GONE
                                 setBackgroundColor(android.graphics.Color.TRANSPARENT)
                                 hideController()
@@ -370,50 +389,122 @@ fun M3ExpressiveNowPlayingFullScreen(
                             if (playerView.player != videoExoPlayer) {
                                 playerView.player = videoExoPlayer
                             }
+                            playerView.resizeMode = currentResizeMode
                             playerView.subtitleView?.visibility = android.view.View.GONE
                         },
                         modifier = Modifier.fillMaxSize()
                     )
                 }
 
-                // Top "Song | Video" Switcher
+                // Top Navigation & Control Bar in Landscape Fullscreen
                 AnimatedVisibility(
                     visible = showControls,
                     enter = fadeIn() + slideInVertically(initialOffsetY = { -50 }),
                     exit = fadeOut() + slideOutVertically(targetOffsetY = { -50 }),
                     modifier = Modifier
                         .align(Alignment.TopCenter)
-                        .padding(top = 16.dp)
+                        .fillMaxWidth()
+                        .padding(horizontal = 20.dp, vertical = 12.dp)
                         .statusBarsPadding()
                 ) {
-                    Row(
-                        modifier = Modifier
-                            .height(36.dp)
-                            .clip(RoundedCornerShape(18.dp))
-                            .background(Color.Black.copy(alpha = 0.65f))
-                            .border(1.dp, Color.White.copy(alpha = 0.15f), RoundedCornerShape(18.dp))
-                            .padding(3.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Box(
+                    Box(modifier = Modifier.fillMaxWidth()) {
+                        // Left: Back / Exit Fullscreen Button
+                        IconButton(
+                            onClick = {
+                                activityContext?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+                            },
                             modifier = Modifier
-                                .fillMaxHeight()
-                                .clip(RoundedCornerShape(15.dp))
-                                .clickable { viewModel.switchToAudioMode(song) }
-                                .padding(horizontal = 16.dp),
-                            contentAlignment = Alignment.Center
+                                .align(Alignment.CenterStart)
+                                .size(40.dp)
+                                .background(Color.Black.copy(alpha = 0.65f), CircleShape)
                         ) {
-                            Text("Song", color = Color.White.copy(alpha = 0.7f), fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Rounded.ArrowBack,
+                                contentDescription = "Exit Fullscreen",
+                                tint = Color.White,
+                                modifier = Modifier.size(22.dp)
+                            )
                         }
-                        Box(
+
+                        // Center: Song | Video Capsule
+                        Row(
                             modifier = Modifier
-                                .fillMaxHeight()
-                                .clip(RoundedCornerShape(15.dp))
-                                .background(expressiveScheme.primary)
-                                .padding(horizontal = 16.dp),
-                            contentAlignment = Alignment.Center
+                                .align(Alignment.Center)
+                                .height(38.dp)
+                                .clip(RoundedCornerShape(19.dp))
+                                .background(Color.Black.copy(alpha = 0.65f))
+                                .border(1.dp, Color.White.copy(alpha = 0.15f), RoundedCornerShape(19.dp))
+                                .padding(3.dp),
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Text("Video", color = expressiveScheme.onPrimary, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxHeight()
+                                    .clip(RoundedCornerShape(16.dp))
+                                    .clickable {
+                                        activityContext?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
+                                        viewModel.switchToAudioMode(song)
+                                    }
+                                    .padding(horizontal = 16.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text("Song", color = Color.White.copy(alpha = 0.7f), fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                            }
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxHeight()
+                                    .clip(RoundedCornerShape(16.dp))
+                                    .background(expressiveScheme.primary)
+                                    .padding(horizontal = 16.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text("Video", color = expressiveScheme.onPrimary, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                            }
+                        }
+
+                        // Right: Scale (Fit/Zoom) & PiP Controls
+                        Row(
+                            modifier = Modifier.align(Alignment.CenterEnd),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            // Scale / Zoom Toggle
+                            IconButton(
+                                onClick = { viewModel.toggleVideoResizeMode() },
+                                modifier = Modifier
+                                    .size(40.dp)
+                                    .background(
+                                        if (currentResizeMode == AspectRatioFrameLayout.RESIZE_MODE_ZOOM)
+                                            Color(0xFF2196F3).copy(alpha = 0.85f)
+                                        else
+                                            Color.Black.copy(alpha = 0.65f),
+                                        CircleShape
+                                    )
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.AspectRatio,
+                                    contentDescription = "Aspect Ratio",
+                                    tint = Color.White,
+                                    modifier = Modifier.size(20.dp)
+                                )
+                            }
+
+                            // PiP Button
+                            IconButton(
+                                onClick = {
+                                    com.musicplayer.lytrix.ui.component.safeEnterPip(activityContext, viewModel)
+                                },
+                                modifier = Modifier
+                                    .size(40.dp)
+                                    .background(Color.Black.copy(alpha = 0.65f), CircleShape)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.PictureInPictureAlt,
+                                    contentDescription = "PiP",
+                                    tint = Color.White,
+                                    modifier = Modifier.size(20.dp)
+                                )
+                            }
                         }
                     }
                 }

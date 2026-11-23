@@ -538,6 +538,9 @@ fun NowPlayingMediaStage(
         val exoPlayer = viewModel.getVideoPlayer()
         val baseSpeed by viewModel.currentPlaybackSpeed.collectAsState()
 
+        val currentResizeMode by viewModel.videoResizeMode.collectAsState()
+        val effectiveResizeMode = currentResizeMode
+
         var hasRenderedFirstFrame by remember(exoPlayer, song.id) { mutableStateOf(false) }
         DisposableEffect(exoPlayer, song.id) {
             val listener = object : Player.Listener {
@@ -614,7 +617,7 @@ fun NowPlayingMediaStage(
                 AndroidView(
                     factory = { ctx ->
                         (LayoutInflater.from(ctx).inflate(R.layout.apple_music_texture_player_view, null) as PlayerView).apply {
-                            resizeMode = videoResizeMode
+                            resizeMode = effectiveResizeMode
                             isClickable = false
                             isFocusable = false
                             setOnTouchListener { _, _ -> false }
@@ -623,13 +626,13 @@ fun NowPlayingMediaStage(
                     },
                     update = { pv ->
                         if (pv.player != exoPlayer) pv.player = exoPlayer
-                        pv.resizeMode = videoResizeMode
+                        pv.resizeMode = effectiveResizeMode
                         pv.subtitleView?.visibility = android.view.View.GONE
                     },
                     modifier = Modifier.fillMaxSize().alpha(videoAlpha)
                 )
 
-                com.musicplayer.lytrix.ui.component.NowPlayingVideoOverlayControls()
+                com.musicplayer.lytrix.ui.component.NowPlayingVideoOverlayControls(viewModel = viewModel)
             }
         }
     } else if (visualMedia != null) {

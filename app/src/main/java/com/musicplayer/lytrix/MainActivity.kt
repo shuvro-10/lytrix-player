@@ -166,6 +166,14 @@ class MainActivity : ComponentActivity() {
 
     var playerViewModel: PlayerViewModel? = null
 
+    var isInPipMode by androidx.compose.runtime.mutableStateOf(false)
+        private set
+
+    override fun onPictureInPictureModeChanged(isInPictureInPictureMode: Boolean, newConfig: android.content.res.Configuration) {
+        super.onPictureInPictureModeChanged(isInPictureInPictureMode, newConfig)
+        isInPipMode = isInPictureInPictureMode
+    }
+
     private var isNowPlayingExpandedGlobal = false
     private var closeNowPlayingGlobal: (() -> Unit)? = null
     var nowPlayingBackHandler: (() -> Boolean)? = null
@@ -927,8 +935,36 @@ class MainActivity : ComponentActivity() {
 
 
                 Box(modifier = Modifier.fillMaxSize()) {
-
-                    val customBgUri = com.musicplayer.lytrix.ui.theme.LocalCustomBackgroundUri.current
+                    if (isInPipMode && videoToPlay == null) {
+                        val pipVideoPlayer = playerViewModel.getVideoPlayer()
+                        val pipResizeMode by playerViewModel.videoResizeMode.collectAsState()
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .background(androidx.compose.ui.graphics.Color.Black)
+                        ) {
+                            if (pipVideoPlayer != null) {
+                                androidx.compose.ui.viewinterop.AndroidView(
+                                    factory = { ctx ->
+                                        androidx.media3.ui.PlayerView(ctx).apply {
+                                            player = pipVideoPlayer
+                                            useController = false
+                                            controllerAutoShow = false
+                                            resizeMode = pipResizeMode
+                                            subtitleView?.visibility = android.view.View.GONE
+                                            setBackgroundColor(android.graphics.Color.BLACK)
+                                        }
+                                    },
+                                    update = { pv ->
+                                        if (pv.player != pipVideoPlayer) pv.player = pipVideoPlayer
+                                        pv.resizeMode = pipResizeMode
+                                    },
+                                    modifier = Modifier.fillMaxSize()
+                                )
+                            }
+                        }
+                    } else {
+                        val customBgUri = com.musicplayer.lytrix.ui.theme.LocalCustomBackgroundUri.current
 
                     Scaffold(
 
@@ -1632,6 +1668,9 @@ class MainActivity : ComponentActivity() {
 
                                     BackHandler(enabled = isNowPlayingExpanded) {
                                         android.util.Log.d("BACKDBG", "4. NowPlaying BackHandler triggered -> closing NowPlaying")
+                                        if (this@MainActivity.requestedOrientation != android.content.pm.ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED) {
+                                            this@MainActivity.requestedOrientation = android.content.pm.ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
+                                        }
                                         isNowPlayingExpanded = false
                                     }
 
@@ -2771,6 +2810,8 @@ class MainActivity : ComponentActivity() {
 
                     }
 
+                    }
+
                 }
 
             }
@@ -2783,6 +2824,9 @@ class MainActivity : ComponentActivity() {
 
     override fun onStop() {
         super.onStop()
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N && isInPictureInPictureMode) {
+            return
+        }
         val powerManager = getSystemService(Context.POWER_SERVICE) as? android.os.PowerManager
         val isScreenOn = powerManager?.isInteractive ?: true
         if (isScreenOn && !isFinishing) {

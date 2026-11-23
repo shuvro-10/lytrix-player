@@ -6254,6 +6254,15 @@ class PlayerViewModel : ViewModel() {
     private val _isVideoModeActive = MutableStateFlow(false)
     val isVideoModeActive: StateFlow<Boolean> = _isVideoModeActive.asStateFlow()
 
+    val videoResizeMode = MutableStateFlow(androidx.media3.ui.AspectRatioFrameLayout.RESIZE_MODE_FIT)
+    fun toggleVideoResizeMode() {
+        videoResizeMode.value = if (videoResizeMode.value == androidx.media3.ui.AspectRatioFrameLayout.RESIZE_MODE_FIT) {
+            androidx.media3.ui.AspectRatioFrameLayout.RESIZE_MODE_ZOOM
+        } else {
+            androidx.media3.ui.AspectRatioFrameLayout.RESIZE_MODE_FIT
+        }
+    }
+
     /**
      * TRUE while the user has asked for video but the audio is still the sound source
      * (video is loading / being cued). During this time `isVideoModeActive` is still FALSE, so every other part of

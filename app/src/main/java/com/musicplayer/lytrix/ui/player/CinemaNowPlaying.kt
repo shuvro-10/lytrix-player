@@ -3,6 +3,8 @@
 
 package com.musicplayer.lytrix.ui.player
 
+import android.app.Activity
+import android.content.pm.ActivityInfo
 import android.content.res.Configuration
 import android.os.Build
 import androidx.compose.animation.AnimatedVisibility
@@ -71,6 +73,7 @@ import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -255,6 +258,15 @@ fun CinemaNowPlayingFullScreen(
 
     val artistAnnotated = remember(song.artist) {
         buildClickableArtistAnnotated(song.artist, Color.White.copy(alpha = 0.72f), fontSize = 15.sp)
+    }
+
+    val activityContext = context as? Activity
+    DisposableEffect(Unit) {
+        onDispose {
+            if (activityContext?.requestedOrientation != ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED) {
+                activityContext?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
+            }
+        }
     }
 
     Box(modifier = Modifier.fillMaxSize()) {
