@@ -744,12 +744,10 @@ fun CinemaNowPlayingFullScreen(
                         ) {
                             AnimatedVisibility(visible = !theatreFocusMode, enter = fadeIn(tween(220)), exit = fadeOut(tween(220))) {
                                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                                    Row(
+                                    Box(
                                         modifier = Modifier.fillMaxWidth(),
-                                        horizontalArrangement = Arrangement.SpaceBetween,
-                                        verticalAlignment = Alignment.CenterVertically
+                                        contentAlignment = Alignment.Center
                                     ) {
-                                        aodAndMenuButtons(36.dp)
                                         AudioVideoModePill(
                                             song = song,
                                             isYtSong = isYtSong,
@@ -764,6 +762,9 @@ fun CinemaNowPlayingFullScreen(
                                             fallbackTitle = "Cinema Mode",
                                             isVideoHandoffPending = isVideoHandoffPending
                                         )
+                                        Box(modifier = Modifier.align(Alignment.CenterEnd)) {
+                                            aodAndMenuButtons(36.dp)
+                                        }
                                     }
                                     formatSeamBlock()
                                 }
