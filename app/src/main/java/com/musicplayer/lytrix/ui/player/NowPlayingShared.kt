@@ -1241,43 +1241,6 @@ fun NowPlayingLandscapeVideoFullScreen(
                     )
                 }
 
-                // Center: Song | Video Capsule
-                Row(
-                    modifier = Modifier
-                        .align(Alignment.Center)
-                        .height(38.dp)
-                        .clip(RoundedCornerShape(19.dp))
-                        .background(Color.Black.copy(alpha = 0.65f))
-                        .border(1.dp, Color.White.copy(alpha = 0.15f), RoundedCornerShape(19.dp))
-                        .padding(3.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxHeight()
-                            .clip(RoundedCornerShape(16.dp))
-                            .clickable {
-                                viewModel.isLandscapeVideoFullscreen.value = false
-                                activityContext?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
-                                viewModel.switchToAudioMode(song)
-                            }
-                            .padding(horizontal = 16.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text("Song", color = Color.White.copy(alpha = 0.7f), fontSize = 12.sp, fontWeight = FontWeight.Bold)
-                    }
-                    Box(
-                        modifier = Modifier
-                            .fillMaxHeight()
-                            .clip(RoundedCornerShape(16.dp))
-                            .background(accentColor)
-                            .padding(horizontal = 16.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text("Video", color = contentColorOnAccent, fontSize = 12.sp, fontWeight = FontWeight.Bold)
-                    }
-                }
-
                 // Right: Scale (Fit/Zoom) & PiP Controls
                 Row(
                     modifier = Modifier.align(Alignment.CenterEnd),
