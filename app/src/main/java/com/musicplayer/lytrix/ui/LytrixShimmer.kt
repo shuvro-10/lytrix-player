@@ -18,6 +18,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import com.musicplayer.lytrix.ui.theme.LocalIsDarkTheme
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
@@ -27,10 +28,13 @@ import androidx.compose.ui.unit.dp
  * SimpMusic ও Meld এর মতো ফ্লুইড, স্মুথ লাইট-ওয়েভ অ্যানিমেশন।
  */
 fun Modifier.shimmer(
-    baseColor: Color = Color(0xFF1E1E1E),
-    highlightColor: Color = Color(0xFF333333),
+    baseColor: Color? = null,
+    highlightColor: Color? = null,
     durationMillis: Int = 1100
 ): Modifier = composed {
+    val isDark = LocalIsDarkTheme.current
+    val effectiveBaseColor = baseColor ?: if (isDark) Color(0xFF1E1E1E) else Color(0xFFE8E8EE)
+    val effectiveHighlightColor = highlightColor ?: if (isDark) Color(0xFF333333) else Color(0xFFFBFBFE)
     var size by remember { mutableStateOf(IntSize.Zero) }
     val transition = rememberInfiniteTransition(label = "LytrixShimmer")
 
@@ -45,7 +49,7 @@ fun Modifier.shimmer(
 
     background(
         brush = Brush.linearGradient(
-            colors = listOf(baseColor, highlightColor, baseColor),
+            colors = listOf(effectiveBaseColor, effectiveHighlightColor, effectiveBaseColor),
             start = Offset(startOffsetX, 0f),
             end = Offset(startOffsetX + size.width.toFloat().coerceAtLeast(100f), size.height.toFloat().coerceAtLeast(100f))
         )
@@ -61,8 +65,8 @@ fun Modifier.shimmer(
 @Composable
 fun LytrixSongItemShimmer(
     modifier: Modifier = Modifier,
-    baseColor: Color = Color(0xFF1E1E1E),
-    highlightColor: Color = Color(0xFF333333)
+    baseColor: Color? = null,
+    highlightColor: Color? = null
 ) {
     Row(
         modifier = modifier
@@ -142,8 +146,8 @@ fun LytrixSongListShimmer(
 fun LytrixHorizontalCardSectionShimmer(
     cardCount: Int = 5,
     modifier: Modifier = Modifier,
-    baseColor: Color = Color(0xFF1E1E1E),
-    highlightColor: Color = Color(0xFF333333)
+    baseColor: Color? = null,
+    highlightColor: Color? = null
 ) {
     Column(modifier = modifier.fillMaxWidth().padding(vertical = 12.dp)) {
         // Section Title Placeholder

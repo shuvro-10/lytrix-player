@@ -797,6 +797,29 @@ class MainActivity : ComponentActivity() {
                     closeNowPlayingGlobal = { isNowPlayingExpanded = false }
                 }
 
+                val mainView = androidx.compose.ui.platform.LocalView.current
+                val isDarkThemeGlobal = com.musicplayer.lytrix.ui.theme.LocalIsDarkTheme.current
+                DisposableEffect(isNowPlayingExpanded, isDarkThemeGlobal, mainView) {
+                    if (!mainView.isInEditMode && !isDarkThemeGlobal) {
+                        val window = (mainView.context as? android.app.Activity)?.window
+                        if (window != null) {
+                            val insetsController = androidx.core.view.WindowCompat.getInsetsController(window, mainView)
+                            insetsController.isAppearanceLightStatusBars = !isNowPlayingExpanded
+                            insetsController.isAppearanceLightNavigationBars = !isNowPlayingExpanded
+                        }
+                    }
+                    onDispose {
+                        if (!mainView.isInEditMode && !isDarkThemeGlobal) {
+                            val window = (mainView.context as? android.app.Activity)?.window
+                            if (window != null) {
+                                val insetsController = androidx.core.view.WindowCompat.getInsetsController(window, mainView)
+                                insetsController.isAppearanceLightStatusBars = true
+                                insetsController.isAppearanceLightNavigationBars = true
+                            }
+                        }
+                    }
+                }
+
                 val globalSnackbarHostState = remember { SnackbarHostState() }
 
                 LaunchedEffect(playerViewModel) {
