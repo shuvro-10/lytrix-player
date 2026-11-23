@@ -749,6 +749,7 @@ fun CinemaNowPlayingFullScreen(
                                         horizontalArrangement = Arrangement.SpaceBetween,
                                         verticalAlignment = Alignment.CenterVertically
                                     ) {
+                                        aodAndMenuButtons(36.dp)
                                         AudioVideoModePill(
                                             song = song,
                                             isYtSong = isYtSong,
@@ -763,7 +764,6 @@ fun CinemaNowPlayingFullScreen(
                                             fallbackTitle = "Cinema Mode",
                                             isVideoHandoffPending = isVideoHandoffPending
                                         )
-                                        aodAndMenuButtons(36.dp)
                                     }
                                     formatSeamBlock()
                                 }

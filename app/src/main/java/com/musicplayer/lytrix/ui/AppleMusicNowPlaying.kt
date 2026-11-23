@@ -907,10 +907,11 @@ if (videoStageActive) {
                         BoxWithConstraints(
                             modifier = Modifier
                                 .fillMaxSize()
-                                .padding(top = statusBarHeight + 56.dp, bottom = 8.dp),
+                                .padding(top = if (roundedCardMode) 12.dp else (statusBarHeight + 56.dp), bottom = 8.dp),
                             contentAlignment = Alignment.Center
                         ) {
-                            val idealHeight = screenWidth / videoAspect
+                            val targetWidth = maxWidth
+                            val idealHeight = targetWidth / videoAspect
                             val boxHeight = minOf(idealHeight, maxHeight)
                             val isHeightLimited = boxHeight < idealHeight - 1.dp
 
@@ -931,7 +932,7 @@ if (videoStageActive) {
                                 },
                                 swipeEnabled = false,
                                 modifier = Modifier
-                                    .requiredSize(screenWidth, boxHeight)
+                                    .requiredSize(targetWidth, boxHeight)
                                     .background(Color.Black)
                             ) {
                                 if (isHeightLimited) {
