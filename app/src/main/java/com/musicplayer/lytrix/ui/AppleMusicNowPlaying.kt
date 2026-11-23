@@ -5,7 +5,6 @@ package com.musicplayer.lytrix.ui
 
 import com.musicplayer.lytrix.ui.component.NowPlayingVideoOverlayControls
 import com.musicplayer.lytrix.ui.player.NowPlayingLandscapeVideoFullScreen
-import com.musicplayer.lytrix.ui.player.NowPlayingMediaStage
 
 import android.app.Activity
 import android.content.Context
@@ -911,8 +910,7 @@ if (videoStageActive) {
                                 .padding(top = statusBarHeight + 56.dp, bottom = 8.dp),
                             contentAlignment = Alignment.Center
                         ) {
-                            val containerWidth = maxWidth
-                            val idealHeight = containerWidth / videoAspect
+                            val idealHeight = screenWidth / videoAspect
                             val boxHeight = minOf(idealHeight, maxHeight)
                             val isHeightLimited = boxHeight < idealHeight - 1.dp
 
@@ -933,7 +931,7 @@ if (videoStageActive) {
                                 },
                                 swipeEnabled = false,
                                 modifier = Modifier
-                                    .requiredSize(containerWidth, boxHeight)
+                                    .requiredSize(screenWidth, boxHeight)
                                     .background(Color.Black)
                             ) {
                                 if (isHeightLimited) {
@@ -1586,7 +1584,7 @@ if (videoStageActive) {
                 .verticalScroll(scrollState)
         ) {
             if (isLandscape) {
-                // Immersive-style Apple Music Landscape: Edge-to-edge Left 48% with 16:9 Crisp Video OR Artwork + Right 52% Controls
+                // Immersive-style Apple Music Landscape: Edge-to-edge Left 48% full-height cover with horizontal fade + Right 52% Controls
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -1595,70 +1593,27 @@ if (videoStageActive) {
                 ) {
                     val artWidth = totalViewportWidth * 0.48f
 
-                    if (videoStageActive) {
-                        // Left 48% Stage with centered 16:9 Video Card
-                        Box(
-                            modifier = Modifier
-                                .size(width = artWidth, height = totalViewportHeight)
-                                .align(Alignment.TopStart)
-                                .systemBarsPadding()
-                                .padding(start = 18.dp, end = 16.dp, top = 48.dp, bottom = 12.dp)
-                        ) {
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .aspectRatio(16f / 9f)
-                                    .align(Alignment.Center)
-                                    .clip(RoundedCornerShape(20.dp))
-                                    .background(Color.Black)
-                            ) {
-                                NowPlayingMediaStage(
-                                    viewModel = viewModel,
-                                    song = song,
-                                    artData = artData,
-                                    visualMedia = visualMedia,
-                                    isVideoModeActive = true,
-                                    isPlaying = isPlaying,
-                                    currentPosition = currentPosition,
-                                    duration = duration,
-                                    accentColor = effectiveAccent,
-                                    gesturesEnabled = playerGesturesEnabled,
-                                    isGuest = isGuest,
-                                    shape = RoundedCornerShape(20.dp),
-                                    onSeek = onSeek,
-                                    onPlayPause = onPlayPause,
-                                    onSkipNext = onSkipNext,
-                                    onSkipPrevious = onSkipPrevious,
-                                    videoResizeMode = currentResizeMode,
-                                    modifier = Modifier.fillMaxSize()
-                                )
-                            }
-                        }
-                    } else {
-                        // Left 48% Edge-to-Edge Stage (Full Height + Smooth Horizontal Fade for Artwork)
-                        Box(
-                            modifier = Modifier
-                                .size(width = artWidth, height = totalViewportHeight)
-                                .align(Alignment.TopStart)
-                        ) {
-                            stageBlock(Modifier.fillMaxSize(), true)
-                        }
-                    }
-
-                    // Global Top Bar in Landscape (Centered Mode Switcher, Clean & Non-obstructive)
+                    // Left 48% Edge-to-Edge Stage (Full Height + Smooth Horizontal Fade)
                     Box(
                         modifier = Modifier
-                            .fillMaxWidth()
-                            .align(Alignment.TopCenter)
-                            .systemBarsPadding()
-                            .padding(start = 18.dp, end = 24.dp, top = 10.dp)
+                            .size(width = artWidth, height = totalViewportHeight)
+                            .align(Alignment.TopStart)
                     ) {
-                        Box(modifier = Modifier.align(Alignment.CenterStart)) {
-                            collapseButton(38.dp)
-                        }
-                        Box(modifier = Modifier.align(Alignment.Center)) {
-                            modeSwitcherSlot()
-                        }
+                        stageBlock(Modifier.fillMaxSize(), true)
+                    }
+
+                    // Top-left floating Collapse + Audio/Video Switcher over Left Stage
+                    Row(
+                        modifier = Modifier
+                            .width(artWidth)
+                            .align(Alignment.TopStart)
+                            .systemBarsPadding()
+                            .padding(start = 18.dp, end = 16.dp, top = 12.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        collapseButton(38.dp)
+                        modeSwitcherSlot()
                     }
 
                     // Right 52% Controls Column
@@ -1668,7 +1623,7 @@ if (videoStageActive) {
                             .fillMaxWidth(0.52f)
                             .align(Alignment.CenterEnd)
                             .systemBarsPadding()
-                            .padding(start = 12.dp, end = 24.dp, top = 48.dp, bottom = 10.dp),
+                            .padding(start = 12.dp, end = 24.dp, top = 10.dp, bottom = 10.dp),
                         verticalArrangement = Arrangement.SpaceBetween,
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
