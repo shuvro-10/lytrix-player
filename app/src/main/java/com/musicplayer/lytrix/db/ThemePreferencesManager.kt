@@ -23,10 +23,27 @@ class ThemePreferencesManager(context: Context) {
         val LANGUAGE_CODE = stringPreferencesKey("language_code")
         val PURE_BLACK = booleanPreferencesKey("pure_black")
         val DYNAMIC_THEME = booleanPreferencesKey("dynamic_theme")
+
+        private const val SYNC_PREFS_NAME = "theme_preferences_sync"
+        private const val KEY_THEME_MODE = "app_theme_mode"
+
+        fun getCachedThemeMode(context: Context): String {
+            val sp = context.applicationContext.getSharedPreferences(SYNC_PREFS_NAME, Context.MODE_PRIVATE)
+            return sp.getString(KEY_THEME_MODE, "Dark") ?: "Dark"
+        }
+
+        fun setCachedThemeMode(context: Context, mode: String) {
+            context.applicationContext.getSharedPreferences(SYNC_PREFS_NAME, Context.MODE_PRIVATE)
+                .edit()
+                .putString(KEY_THEME_MODE, mode)
+                .apply()
+        }
     }
 
     val appThemeMode: Flow<String> = appContext.dataStore.data.map { preferences ->
-        preferences[APP_THEME_MODE] ?: "Dark"
+        val mode = preferences[APP_THEME_MODE] ?: "Dark"
+        setCachedThemeMode(appContext, mode)
+        mode
     }
     
     val playerTheme: Flow<String> = appContext.dataStore.data.map { preferences ->
@@ -58,6 +75,7 @@ class ThemePreferencesManager(context: Context) {
     }
 
     suspend fun saveAppThemeMode(mode: String) {
+        setCachedThemeMode(appContext, mode)
         appContext.dataStore.edit { preferences ->
             preferences[APP_THEME_MODE] = mode
         }

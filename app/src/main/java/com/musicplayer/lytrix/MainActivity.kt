@@ -439,8 +439,23 @@ class MainActivity : ComponentActivity() {
 
                 }
 
+                val themePrefs = com.musicplayer.lytrix.db.ThemePreferencesManager(this@MainActivity)
+                val sp = getSharedPreferences("theme_preferences_sync", Context.MODE_PRIVATE)
+                if (!sp.contains("app_theme_mode")) {
+                    val mode = themePrefs.appThemeMode.first()
+                    com.musicplayer.lytrix.db.ThemePreferencesManager.setCachedThemeMode(this@MainActivity, mode)
+                }
             } catch (_: Exception) {}
 
+        }
+
+        val cachedTheme = com.musicplayer.lytrix.db.ThemePreferencesManager.getCachedThemeMode(this)
+        if (cachedTheme == "Light") {
+            window.decorView.setBackgroundColor(android.graphics.Color.WHITE)
+            androidx.core.view.WindowCompat.getInsetsController(window, window.decorView).isAppearanceLightStatusBars = true
+            androidx.core.view.WindowCompat.getInsetsController(window, window.decorView).isAppearanceLightNavigationBars = true
+        } else {
+            window.decorView.setBackgroundColor(android.graphics.Color.parseColor("#070707"))
         }
 
 

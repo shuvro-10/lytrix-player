@@ -41,6 +41,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import androidx.datastore.preferences.core.*
 import kotlinx.coroutines.flow.first
+import com.musicplayer.lytrix.ui.theme.LocalIsDarkTheme
 
 val GoldGradient = Brush.linearGradient(listOf(Color(0xFFFFD700), Color(0xFFFFA500)))
 val PremiumDarkCard = Color(0xFF1E1E1E)
@@ -162,16 +163,18 @@ fun ShopScreen(onBack: () -> Unit) {
         }
     }
 
+    val isDark = LocalIsDarkTheme.current
+
     if (showHistory) {
         Dialog(onDismissRequest = { showHistory = false }) {
             Card(
                 modifier = Modifier.fillMaxWidth().fillMaxHeight(0.7f),
                 shape = RoundedCornerShape(20.dp),
-                colors = CardDefaults.cardColors(containerColor = PremiumDarkCard)
+                colors = CardDefaults.cardColors(containerColor = if (isDark) PremiumDarkCard else MaterialTheme.colorScheme.surfaceContainerHigh)
             ) {
                 Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                        Text("Coin History", color = Color.White, fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                        Text("Coin History", color = if (isDark) Color.White else MaterialTheme.colorScheme.onSurface, fontSize = 20.sp, fontWeight = FontWeight.Bold)
                         IconButton(onClick = { showHistory = false }) { Icon(TablerIcons.X, contentDescription = "Close", tint = Color.Gray) }
                     }
                     Spacer(modifier = Modifier.height(8.dp))
@@ -183,11 +186,11 @@ fun ShopScreen(onBack: () -> Unit) {
                         LazyColumn {
                             items(historyList) { item ->
                                 Row(
-                                    modifier = Modifier.fillMaxWidth().padding(vertical = 12.dp).background(Color(0xFF2C2C2C), RoundedCornerShape(12.dp)).padding(16.dp),
+                                    modifier = Modifier.fillMaxWidth().padding(vertical = 12.dp).background(if (isDark) Color(0xFF2C2C2C) else MaterialTheme.colorScheme.surfaceContainer, RoundedCornerShape(12.dp)).padding(16.dp),
                                     verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween
                                 ) {
                                     Column(modifier = Modifier.weight(1f)) {
-                                        Text(item.title, color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.SemiBold)
+                                        Text(item.title, color = if (isDark) Color.White else MaterialTheme.colorScheme.onSurface, fontSize = 14.sp, fontWeight = FontWeight.SemiBold)
                                         val sdf = SimpleDateFormat("dd MMM, hh:mm a", Locale.getDefault())
                                         Text(sdf.format(Date(item.timestamp)), color = Color.Gray, fontSize = 12.sp)
                                     }
@@ -202,7 +205,7 @@ fun ShopScreen(onBack: () -> Unit) {
     }
 
     Box(modifier = Modifier.fillMaxSize().background(bgColor)) {
-        Box(modifier = Modifier.fillMaxWidth().height(260.dp).background(Brush.verticalGradient(listOf(Color(0xFF2C2C2C), bgColor))))
+        Box(modifier = Modifier.fillMaxWidth().height(260.dp).background(Brush.verticalGradient(if (isDark) listOf(Color(0xFF2C2C2C), bgColor) else listOf(MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = 0.5f), bgColor))))
         Column(modifier = Modifier.fillMaxSize()) {
             Row(modifier = Modifier.fillMaxWidth().statusBarsPadding().padding(horizontal = 8.dp, vertical = 12.dp), verticalAlignment = Alignment.CenterVertically) {
                 IconButton(onClick = onBack) { Icon(TablerIcons.ArrowLeft, contentDescription = "Back", tint = onBgColor) }
@@ -210,10 +213,10 @@ fun ShopScreen(onBack: () -> Unit) {
             }
             Card(
                 modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp).padding(bottom = 16.dp),
-                shape = RoundedCornerShape(20.dp), colors = CardDefaults.cardColors(containerColor = PremiumDarkCard), elevation = CardDefaults.cardElevation(8.dp)
+                shape = RoundedCornerShape(20.dp), colors = CardDefaults.cardColors(containerColor = if (isDark) PremiumDarkCard else MaterialTheme.colorScheme.surfaceContainerHigh), elevation = CardDefaults.cardElevation(8.dp)
             ) {
                 Row(
-                    modifier = Modifier.fillMaxWidth().background(Brush.linearGradient(listOf(Color(0xFF232526), Color(0xFF414345)))).padding(24.dp),
+                    modifier = Modifier.fillMaxWidth().background(if (isDark) Brush.linearGradient(listOf(Color(0xFF232526), Color(0xFF414345))) else Brush.linearGradient(listOf(MaterialTheme.colorScheme.surfaceContainerHigh, MaterialTheme.colorScheme.surfaceContainerHighest))).padding(24.dp),
                     verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Column {
@@ -225,7 +228,7 @@ fun ShopScreen(onBack: () -> Unit) {
                             if (isLoading) {
                                 CircularProgressIndicator(modifier = Modifier.size(24.dp), color = Color(0xFFFFD700), strokeWidth = 2.dp)
                             } else {
-                                Text("$coinBalance", color = Color.White, fontSize = 36.sp, fontWeight = FontWeight.Black)
+                                Text("$coinBalance", color = if (isDark) Color.White else MaterialTheme.colorScheme.onSurface, fontSize = 36.sp, fontWeight = FontWeight.Black)
                             }
                         }
                     }
@@ -257,15 +260,29 @@ fun ShopScreen(onBack: () -> Unit) {
 
 @Composable
 fun PremiumTabItem(title: String, isSelected: Boolean, onClick: () -> Unit, modifier: Modifier) {
+    val isDark = LocalIsDarkTheme.current
+    val tabBg = if (isSelected) {
+        if (isDark) Color(0xFF333333) else MaterialTheme.colorScheme.primaryContainer
+    } else Color.Transparent
+    val tabBorder = if (isSelected) {
+        if (isDark) Color(0xFFFFD700) else MaterialTheme.colorScheme.primary
+    } else {
+        if (isDark) Color.DarkGray else MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
+    }
+    val tabText = if (isSelected) {
+        if (isDark) Color(0xFFFFD700) else MaterialTheme.colorScheme.onPrimaryContainer
+    } else {
+        if (isDark) Color.Gray else MaterialTheme.colorScheme.onSurfaceVariant
+    }
     Box(
         modifier = modifier
             .clip(RoundedCornerShape(12.dp))
-            .background(if (isSelected) Color(0xFF333333) else Color.Transparent)
-            .border(if (isSelected) 2.dp else 1.dp, if (isSelected) Color(0xFFFFD700) else Color.DarkGray, RoundedCornerShape(12.dp))
+            .background(tabBg)
+            .border(if (isSelected) 2.dp else 1.dp, tabBorder, RoundedCornerShape(12.dp))
             .clickable { onClick() }
             .padding(vertical = 12.dp),
         contentAlignment = Alignment.Center
-    ) { Text(title, color = if (isSelected) Color(0xFFFFD700) else Color.Gray, fontWeight = FontWeight.Bold) }
+    ) { Text(title, color = tabText, fontWeight = FontWeight.Bold) }
 }
 
 @Composable
@@ -482,20 +499,21 @@ fun EarnCoinsContent(onBgColor: Color, adRewardCoins: Int, liveTasks: List<LiveT
             if (isShareTask) progress = if(isClaimedUI) target else 0
             val progressPercent = if (target > 0) progress.toFloat() / target.toFloat() else 0f
 
-            Row(modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp).clip(RoundedCornerShape(16.dp)).background(PremiumDarkCard).padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
-                Box(modifier = Modifier.size(48.dp).background(Color(0xFF2C2C2C), CircleShape), contentAlignment = Alignment.Center) { Icon(icon, contentDescription = null, tint = AccentNeon) }
+            val isDark = LocalIsDarkTheme.current
+            Row(modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp).clip(RoundedCornerShape(16.dp)).background(if (isDark) PremiumDarkCard else MaterialTheme.colorScheme.surfaceContainerHigh).padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
+                Box(modifier = Modifier.size(48.dp).background(if (isDark) Color(0xFF2C2C2C) else MaterialTheme.colorScheme.surfaceContainerHighest, CircleShape), contentAlignment = Alignment.Center) { Icon(icon, contentDescription = null, tint = AccentNeon) }
                 Spacer(modifier = Modifier.width(16.dp))
                 Column(modifier = Modifier.weight(1f)) {
-                    Text(task.title, color = Color.White, fontSize = 15.sp, fontWeight = FontWeight.SemiBold)
+                    Text(task.title, color = if (isDark) Color.White else MaterialTheme.colorScheme.onSurface, fontSize = 15.sp, fontWeight = FontWeight.SemiBold)
                     Spacer(modifier = Modifier.height(6.dp))
                     if (!isShareTask) {
-                        LinearProgressIndicator(progress = { progressPercent }, modifier = Modifier.fillMaxWidth(0.8f).height(4.dp).clip(RoundedCornerShape(2.dp)), color = AccentNeon, trackColor = Color.DarkGray)
+                        LinearProgressIndicator(progress = { progressPercent }, modifier = Modifier.fillMaxWidth(0.8f).height(4.dp).clip(RoundedCornerShape(2.dp)), color = AccentNeon, trackColor = if (isDark) Color.DarkGray else MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f))
                         Spacer(modifier = Modifier.height(4.dp))
                     }
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(TablerIcons.Coin, contentDescription = null, tint = Color(0xFFFFD700), modifier = Modifier.size(14.dp))
                         Text(" +${task.coins} Coins", color = Color(0xFFFFD700), fontSize = 13.sp)
-                        if (!isShareTask) Text("  •  $progress/$target", color = Color.Gray, fontSize = 12.sp)
+                        if (!isShareTask) Text("  •  $progress/$target", color = if (isDark) Color.Gray else MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 12.sp)
                     }
                 }
 
@@ -547,18 +565,19 @@ fun RedeemGiftsContent(onBgColor: Color, coinBalance: Int, prices: Map<String, I
         Triple("15-Day Premium", prices["p5"].toString(), TablerIcons.Crown)
     )
 
+    val isDark = LocalIsDarkTheme.current
     LazyColumn(modifier = Modifier.fillMaxSize(), contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp)) {
         item { Text("Lytrix Benefits", color = onBgColor, fontSize = 18.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(bottom = 16.dp, start = 8.dp)) }
         items(items.chunked(2)) { rowItems ->
             Row(modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
                 rowItems.forEach { item ->
                     val requiredCoins = item.second.toIntOrNull() ?: 99999
-                    Card(modifier = Modifier.weight(1f).height(180.dp), shape = RoundedCornerShape(20.dp), colors = CardDefaults.cardColors(containerColor = PremiumDarkCard)) {
+                    Card(modifier = Modifier.weight(1f).height(180.dp), shape = RoundedCornerShape(20.dp), colors = CardDefaults.cardColors(containerColor = if (isDark) PremiumDarkCard else MaterialTheme.colorScheme.surfaceContainerHigh)) {
                         Column(modifier = Modifier.fillMaxSize().padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.SpaceBetween) {
-                            Box(modifier = Modifier.size(60.dp).background(Color(0xFF2C2C2C), CircleShape), contentAlignment = Alignment.Center) {
+                            Box(modifier = Modifier.size(60.dp).background(if (isDark) Color(0xFF2C2C2C) else MaterialTheme.colorScheme.surfaceContainerHighest, CircleShape), contentAlignment = Alignment.Center) {
                                 Icon(item.third, contentDescription = null, tint = if(item.first.contains("Plus")) Color(0xFFE91E63) else Color(0xFF64B5F6), modifier = Modifier.size(32.dp))
                             }
-                            Text(item.first, color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.Bold, textAlign = TextAlign.Center)
+                            Text(item.first, color = if (isDark) Color.White else MaterialTheme.colorScheme.onSurface, fontSize = 14.sp, fontWeight = FontWeight.Bold, textAlign = TextAlign.Center)
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 Icon(TablerIcons.Coin, contentDescription = null, tint = Color(0xFFFFD700), modifier = Modifier.size(18.dp))
                                 Spacer(modifier = Modifier.width(4.dp))
@@ -677,8 +696,10 @@ fun ReferralScreen(onBack: () -> Unit) {
         } else { inviteCode = "LOGIN_REQUIRED" }
     }
 
+    val isDark = LocalIsDarkTheme.current
+
     Box(modifier = Modifier.fillMaxSize().background(bgColor)) {
-        Box(modifier = Modifier.fillMaxWidth().height(260.dp).background(Brush.verticalGradient(listOf(Color(0xFF1E1E1E), bgColor))))
+        Box(modifier = Modifier.fillMaxWidth().height(260.dp).background(Brush.verticalGradient(if (isDark) listOf(Color(0xFF1E1E1E), bgColor) else listOf(MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = 0.5f), bgColor))))
         Column(modifier = Modifier.fillMaxSize()) {
             Row(modifier = Modifier.fillMaxWidth().statusBarsPadding().padding(horizontal = 8.dp, vertical = 12.dp), verticalAlignment = Alignment.CenterVertically) {
                 IconButton(onClick = onBack) { Icon(TablerIcons.ArrowLeft, contentDescription = "Back", tint = onBgColor) }
@@ -704,9 +725,9 @@ fun ReferralScreen(onBack: () -> Unit) {
                         }
                     }
                     item {
-                        Card(modifier = Modifier.fillMaxWidth().padding(bottom = 24.dp), shape = RoundedCornerShape(20.dp), colors = CardDefaults.cardColors(containerColor = PremiumDarkCard)) {
+                        Card(modifier = Modifier.fillMaxWidth().padding(bottom = 24.dp), shape = RoundedCornerShape(20.dp), colors = CardDefaults.cardColors(containerColor = if (isDark) PremiumDarkCard else MaterialTheme.colorScheme.surfaceContainerHigh)) {
                             Row(modifier = Modifier.fillMaxWidth().padding(24.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
-                                Column { Text("Total Invited Friends", color = Color.Gray, fontSize = 14.sp); Spacer(modifier = Modifier.height(4.dp)); Text("$inviteCount / 20", color = Color(0xFFFFD700), fontSize = 32.sp, fontWeight = FontWeight.Black) }
+                                Column { Text("Total Invited Friends", color = if (isDark) Color.Gray else MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 14.sp); Spacer(modifier = Modifier.height(4.dp)); Text("$inviteCount / 20", color = Color(0xFFFFD700), fontSize = 32.sp, fontWeight = FontWeight.Black) }
                                 Icon(TablerIcons.Gift, contentDescription = null, tint = AccentNeon, modifier = Modifier.size(48.dp))
                             }
                         }
@@ -721,10 +742,10 @@ fun ReferralScreen(onBack: () -> Unit) {
                                 modifier = Modifier.fillMaxWidth().height(56.dp), colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFFD700)), shape = RoundedCornerShape(16.dp)
                             ) { Icon(TablerIcons.Share, contentDescription = null, tint = Color.Black); Spacer(modifier = Modifier.width(8.dp)); Text("Share to Friends", color = Color.Black, fontSize = 18.sp, fontWeight = FontWeight.Bold) }
                             Spacer(modifier = Modifier.height(16.dp))
-                            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.background(PremiumDarkCard, RoundedCornerShape(8.dp)).padding(horizontal = 16.dp, vertical = 12.dp)) {
-                                Text("Invite Code: ", color = Color.Gray, fontSize = 16.sp)
-                                Text(inviteCode, color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(end = 8.dp))
-                                Icon(TablerIcons.Copy, contentDescription = "Copy", tint = Color.Gray, modifier = Modifier.size(20.dp).clickable {
+                            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.background(if (isDark) PremiumDarkCard else MaterialTheme.colorScheme.surfaceContainerHigh, RoundedCornerShape(8.dp)).padding(horizontal = 16.dp, vertical = 12.dp)) {
+                                Text("Invite Code: ", color = if (isDark) Color.Gray else MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 16.sp)
+                                Text(inviteCode, color = if (isDark) Color.White else MaterialTheme.colorScheme.onSurface, fontSize = 16.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(end = 8.dp))
+                                Icon(TablerIcons.Copy, contentDescription = "Copy", tint = if (isDark) Color.Gray else MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(20.dp).clickable {
                                     if (isLoggedIn) { (context.getSystemService(Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager).setPrimaryClip(android.content.ClipData.newPlainText("Invite Code", inviteCode)); Toast.makeText(context, "Code Copied!", Toast.LENGTH_SHORT).show() }
                                     else { Toast.makeText(context, "Please login first!", Toast.LENGTH_SHORT).show() }
                                 })
@@ -733,14 +754,20 @@ fun ReferralScreen(onBack: () -> Unit) {
                         Spacer(modifier = Modifier.height(32.dp))
                     }
                     item {
-                        Card(modifier = Modifier.fillMaxWidth().padding(bottom = 24.dp), shape = RoundedCornerShape(20.dp), colors = CardDefaults.cardColors(containerColor = PremiumDarkCard)) {
+                        Card(modifier = Modifier.fillMaxWidth().padding(bottom = 24.dp), shape = RoundedCornerShape(20.dp), colors = CardDefaults.cardColors(containerColor = if (isDark) PremiumDarkCard else MaterialTheme.colorScheme.surfaceContainerHigh)) {
                             Column(modifier = Modifier.padding(20.dp)) {
-                                Text("Enter Friend's Code", color = Color.White, fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                                Text("Enter Friend's Code", color = if (isDark) Color.White else MaterialTheme.colorScheme.onSurface, fontSize = 18.sp, fontWeight = FontWeight.Bold)
                                 Spacer(modifier = Modifier.height(16.dp))
                                 OutlinedTextField(
                                     value = friendCode, onValueChange = { if(!isCodeAlreadyApplied && isLoggedIn) friendCode = it.uppercase() },
                                     enabled = !isCodeAlreadyApplied && isLoggedIn, placeholder = { Text(if(!isLoggedIn) "Login required ❌" else if(isCodeAlreadyApplied) "Code already applied ✅" else "Paste code here", color = Color.Gray) },
-                                    modifier = Modifier.fillMaxWidth(), colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = Color(0xFFFFD700), unfocusedBorderColor = Color.DarkGray, focusedTextColor = Color.White, unfocusedTextColor = Color.White, disabledBorderColor = Color.DarkGray),
+                                    modifier = Modifier.fillMaxWidth(), colors = OutlinedTextFieldDefaults.colors(
+                                        focusedBorderColor = Color(0xFFFFD700),
+                                        unfocusedBorderColor = if (isDark) Color.DarkGray else MaterialTheme.colorScheme.outlineVariant,
+                                        focusedTextColor = if (isDark) Color.White else MaterialTheme.colorScheme.onSurface,
+                                        unfocusedTextColor = if (isDark) Color.White else MaterialTheme.colorScheme.onSurface,
+                                        disabledBorderColor = if (isDark) Color.DarkGray else MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
+                                    ),
                                     shape = RoundedCornerShape(12.dp),
                                     trailingIcon = {
                                         if (isVerifying) CircularProgressIndicator(modifier = Modifier.size(20.dp), color = AccentNeon, strokeWidth = 2.dp)
@@ -841,8 +868,8 @@ fun ReferralScreen(onBack: () -> Unit) {
                     }
                     item {
                         Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp)) {
-                            Text("How To Earn Premium", color = Color.Gray, fontWeight = FontWeight.Bold, modifier = Modifier.padding(bottom = 12.dp))
-                            Text("1. Share your code with a new user.\n2. When they enter the code, you both get 3-Day Premium.\n3. Maximum 20 friends can be invited.\n4. Premium days obtained by cheating behaviors will be terminated.", color = Color.Gray, fontSize = 14.sp, lineHeight = 22.sp)
+                            Text("How To Earn Premium", color = if (isDark) Color.Gray else MaterialTheme.colorScheme.onSurfaceVariant, fontWeight = FontWeight.Bold, modifier = Modifier.padding(bottom = 12.dp))
+                            Text("1. Share your code with a new user.\n2. When they enter the code, you both get 3-Day Premium.\n3. Maximum 20 friends can be invited.\n4. Premium days obtained by cheating behaviors will be terminated.", color = if (isDark) Color.Gray else MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 14.sp, lineHeight = 22.sp)
                         }
                     }
                 }

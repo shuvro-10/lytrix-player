@@ -89,8 +89,9 @@ fun MyApplicationTheme(
 ) {
     val context = LocalContext.current
     val themePrefs = remember { ThemePreferencesManager(context) }
+    val initialTheme = remember { ThemePreferencesManager.getCachedThemeMode(context) }
 
-    val appThemeMode by themePrefs.appThemeMode.collectAsState(initial = "Dark")
+    val appThemeMode by themePrefs.appThemeMode.collectAsState(initial = initialTheme)
     val accentColorHex by themePrefs.accentColor.collectAsState(initial = "0xFF3182CE")
     val customBgUri by themePrefs.customBackgroundUri.collectAsState(initial = "")
     val gridViewSize by themePrefs.gridViewSize.collectAsState(initial = 1)
