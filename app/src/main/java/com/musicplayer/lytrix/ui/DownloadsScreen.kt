@@ -22,6 +22,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
@@ -55,9 +56,10 @@ fun DownloadsScreen(
     val currentSource = tabs[selectedTabIndex].first
     val currentTasks = allTasks.filter { it.source == currentSource }
     val activeCount = allTasks.count { it.status == DownloadStatus.DOWNLOADING }
+    val isDark = com.musicplayer.lytrix.ui.theme.LocalIsDarkTheme.current
 
     Scaffold(
-        containerColor = Color(0xFF0F0F0F),
+        containerColor = if (isDark) Color(0xFF0F0F0F) else MaterialTheme.colorScheme.background,
         topBar = {
             TopAppBar(
                 title = {
@@ -66,7 +68,7 @@ fun DownloadsScreen(
                             text = "Downloads",
                             fontWeight = FontWeight.Bold,
                             fontSize = 22.sp,
-                            color = Color.White
+                            color = if (isDark) Color.White else MaterialTheme.colorScheme.onBackground
                         )
                         if (activeCount > 0) {
                             Spacer(Modifier.width(10.dp))
@@ -91,11 +93,11 @@ fun DownloadsScreen(
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "Back",
-                            tint = Color.White
+                            tint = if (isDark) Color.White else MaterialTheme.colorScheme.onBackground
                         )
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color(0xFF0F0F0F))
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = if (isDark) Color(0xFF0F0F0F) else MaterialTheme.colorScheme.background)
             )
         }
     ) { padding ->
@@ -119,7 +121,7 @@ fun DownloadsScreen(
                     Box(
                         modifier = Modifier
                             .clip(RoundedCornerShape(20.dp))
-                            .background(if (isSelected) accentColor else Color(0xFF1E1E1E))
+                            .background(if (isSelected) accentColor else if (isDark) Color(0xFF1E1E1E) else MaterialTheme.colorScheme.surfaceContainerHigh)
                             .clickable { selectedTabIndex = index }
                             .padding(horizontal = 16.dp, vertical = 9.dp),
                         contentAlignment = Alignment.Center
@@ -129,7 +131,7 @@ fun DownloadsScreen(
                                 text = label,
                                 fontSize = 13.sp,
                                 fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
-                                color = if (isSelected) Color.Black else Color.White,
+                                color = if (isSelected) (if (accentColor.luminance() > 0.5f) Color.Black else Color.White) else if (isDark) Color.White else MaterialTheme.colorScheme.onSurface,
                                 maxLines = 1
                             )
                             if (count > 0) {
@@ -226,12 +228,13 @@ private fun DownloadItemCard(
     onPlay: () -> Unit
 ) {
     val context = LocalContext.current
+    val isDark = com.musicplayer.lytrix.ui.theme.LocalIsDarkTheme.current
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(16.dp))
-            .background(Color(0xFF181818))
-            .border(1.dp, Color.White.copy(alpha = 0.05f), RoundedCornerShape(16.dp))
+            .background(if (isDark) Color(0xFF181818) else MaterialTheme.colorScheme.surfaceContainerHigh)
+            .border(1.dp, if (isDark) Color.White.copy(alpha = 0.05f) else MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.35f), RoundedCornerShape(16.dp))
             .padding(12.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -243,7 +246,7 @@ private fun DownloadItemCard(
             modifier = Modifier
                 .size(56.dp)
                 .clip(RoundedCornerShape(10.dp))
-                .background(Color(0xFF242424))
+                .background(if (isDark) Color(0xFF242424) else MaterialTheme.colorScheme.surfaceContainerHighest)
         )
 
         Spacer(Modifier.width(12.dp))
@@ -252,7 +255,7 @@ private fun DownloadItemCard(
         Column(modifier = Modifier.weight(1f)) {
             Text(
                 text = task.title,
-                color = Color.White,
+                color = if (isDark) Color.White else MaterialTheme.colorScheme.onSurface,
                 fontSize = 15.sp,
                 fontWeight = FontWeight.SemiBold,
                 maxLines = 1,

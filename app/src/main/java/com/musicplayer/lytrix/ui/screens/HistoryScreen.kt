@@ -284,7 +284,7 @@ fun HistoryScreen(
                     Text("Cancel", color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f))
                 }
             },
-            containerColor = Color(0xFF161210),
+            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
             shape = RoundedCornerShape(16.dp)
         )
     }
@@ -297,7 +297,7 @@ fun HistoryScreen(
 
         ModalBottomSheet(
             onDismissRequest = { selectedItemForMenu = null },
-            containerColor = Color(0xFF161210),
+            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
             shape = RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp)
         ) {
             Column(
@@ -315,7 +315,7 @@ fun HistoryScreen(
                         modifier = Modifier
                             .size(50.dp)
                             .clip(RoundedCornerShape(8.dp))
-                            .background(Color(0xFF222222))
+                            .background(MaterialTheme.colorScheme.surfaceContainerHighest)
                     ) {
                         AsyncImage(
                             model = item.imageUrl,
@@ -344,7 +344,7 @@ fun HistoryScreen(
                     }
                 }
 
-                HorizontalDivider(color = Color.White.copy(alpha = 0.08f), modifier = Modifier.padding(bottom = 8.dp))
+                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.35f), modifier = Modifier.padding(bottom = 8.dp))
 
                 // Play
                 Row(
@@ -551,12 +551,13 @@ fun HistoryScreen(
                 // ── Warning Banner in English (Requested by user) ─────────────
                 if (selectedTab == HistoryTab.LOCAL && showNoticeBanner) {
                     item(key = "notice_banner") {
+                        val isDarkHistory = com.musicplayer.lytrix.ui.theme.LocalIsDarkTheme.current
                         Card(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(horizontal = 16.dp, vertical = 6.dp),
                             shape = RoundedCornerShape(14.dp),
-                            colors = CardDefaults.cardColors(containerColor = Color(0xFF1E1712)),
+                            colors = CardDefaults.cardColors(containerColor = if (isDarkHistory) Color(0xFF1E1712) else MaterialTheme.colorScheme.surfaceContainerHigh),
                             border = androidx.compose.foundation.BorderStroke(1.dp, Color(0x33FFA726))
                         ) {
                             Row(
@@ -579,14 +580,14 @@ fun HistoryScreen(
                                         text = "Online history is not backed up",
                                         fontSize = 14.sp,
                                         fontWeight = FontWeight.Bold,
-                                        color = Color(0xFFF7EBE5)
+                                        color = if (isDarkHistory) Color(0xFFF7EBE5) else MaterialTheme.colorScheme.onSurface
                                     )
                                     Spacer(modifier = Modifier.height(4.dp))
                                     Text(
                                         text = "Listening history for online songs is stored locally on this device and not backed up to the cloud. Save your favorite songs by liking them or adding to a playlist.",
                                         fontSize = 12.sp,
                                         lineHeight = 16.sp,
-                                        color = Color(0xFFF7EBE5).copy(alpha = 0.7f)
+                                        color = if (isDarkHistory) Color(0xFFF7EBE5).copy(alpha = 0.7f) else MaterialTheme.colorScheme.onSurfaceVariant
                                     )
                                 }
                                 IconButton(
@@ -596,7 +597,7 @@ fun HistoryScreen(
                                     Icon(
                                         imageVector = Icons.Rounded.Close,
                                         contentDescription = "Dismiss",
-                                        tint = Color(0xFFF7EBE5).copy(alpha = 0.5f),
+                                        tint = if (isDarkHistory) Color(0xFFF7EBE5).copy(alpha = 0.5f) else MaterialTheme.colorScheme.onSurfaceVariant,
                                         modifier = Modifier.size(16.dp)
                                     )
                                 }

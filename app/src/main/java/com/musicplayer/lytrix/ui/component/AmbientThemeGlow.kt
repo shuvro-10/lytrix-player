@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
@@ -40,7 +41,7 @@ fun AmbientThemeGlow(
 
     val targetGlow = when {
         tint == null -> backgroundColor
-        isLightTheme -> lerp(tint, Color.White, 0.85f)
+        isLightTheme -> tint.copy(alpha = 0.16f)
         else -> tint.copy(alpha = intensity)
     }
 
@@ -50,6 +51,10 @@ fun AmbientThemeGlow(
         label = "ambientGlowAnimation"
     )
 
+    val fadeOutColor = remember(animatedGlowColor) {
+        animatedGlowColor.copy(alpha = 0f)
+    }
+
     Box(
         modifier = modifier
             .fillMaxWidth()
@@ -58,7 +63,7 @@ fun AmbientThemeGlow(
                 // ২৫ ডিগ্রি ডায়াগোনাল অ্যাঙ্গেল: টপ-লেফট থেকে বটম-রাইট
                 drawRect(
                     brush = Brush.linearGradient(
-                        colors = listOf(animatedGlowColor, Color.Transparent),
+                        colors = listOf(animatedGlowColor, fadeOutColor),
                         start = Offset(-size.width * 0.12f, -size.height * 0.12f),
                         end = Offset(size.width * 0.88f, size.height * 0.95f)
                     ),
@@ -66,6 +71,9 @@ fun AmbientThemeGlow(
                 )
             }
     ) {
+        val transparentBackground = remember(backgroundColor) {
+            backgroundColor.copy(alpha = 0f)
+        }
         // নিচের অংশে স্মুথ স্ক্রিম ফেড-আউট যাতে নিচে কোনো শক্ত বর্ডার লাইন না থাকে
         Box(
             modifier = Modifier
@@ -78,7 +86,7 @@ fun AmbientThemeGlow(
                             val t = i / 16f
                             // কিউবিক হারমাইট ইন্টারপোলেশন (Cubic hermite curve)
                             val easedT = t * t * (3f - 2f * t)
-                            t to lerp(Color.Transparent, backgroundColor, easedT)
+                            t to lerp(transparentBackground, backgroundColor, easedT)
                         }
                     )
                 )

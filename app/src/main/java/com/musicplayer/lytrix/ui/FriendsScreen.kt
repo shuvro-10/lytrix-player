@@ -299,6 +299,25 @@ fun FriendsScreen(
     val onlineGreen = Color(0xFF4CAF50)
     val offlineGray = Color(0xFF6B6B8A)
 
+    val friendsView = androidx.compose.ui.platform.LocalView.current
+    val isDarkFriends = com.musicplayer.lytrix.ui.theme.LocalIsDarkTheme.current
+    DisposableEffect(isDarkFriends, friendsView) {
+        if (!friendsView.isInEditMode && !isDarkFriends) {
+            val window = (friendsView.context as? android.app.Activity)?.window
+            if (window != null) {
+                androidx.core.view.WindowCompat.getInsetsController(window, friendsView).isAppearanceLightStatusBars = false
+            }
+        }
+        onDispose {
+            if (!friendsView.isInEditMode && !isDarkFriends) {
+                val window = (friendsView.context as? android.app.Activity)?.window
+                if (window != null) {
+                    androidx.core.view.WindowCompat.getInsetsController(window, friendsView).isAppearanceLightStatusBars = true
+                }
+            }
+        }
+    }
+
     Column(
         modifier = Modifier.fillMaxSize().background(bgColor)
             .statusBarsPadding().navigationBarsPadding()

@@ -311,6 +311,25 @@ fun VideoPlayerFullscreen(
         }
     }
 
+    val videoFullscreenView = androidx.compose.ui.platform.LocalView.current
+    val isDarkThemeFullscreen = com.musicplayer.lytrix.ui.theme.LocalIsDarkTheme.current
+    DisposableEffect(isDarkThemeFullscreen, videoFullscreenView) {
+        if (!videoFullscreenView.isInEditMode && !isDarkThemeFullscreen) {
+            val window = (videoFullscreenView.context as? Activity)?.window
+            if (window != null) {
+                WindowCompat.getInsetsController(window, videoFullscreenView).isAppearanceLightStatusBars = false
+            }
+        }
+        onDispose {
+            if (!videoFullscreenView.isInEditMode && !isDarkThemeFullscreen) {
+                val window = (videoFullscreenView.context as? Activity)?.window
+                if (window != null) {
+                    WindowCompat.getInsetsController(window, videoFullscreenView).isAppearanceLightStatusBars = true
+                }
+            }
+        }
+    }
+
     LaunchedEffect(isControlsVisible, isPlaying, isLocked) {
         if (isControlsVisible && isPlaying && !isLocked) {
             delay(4000)

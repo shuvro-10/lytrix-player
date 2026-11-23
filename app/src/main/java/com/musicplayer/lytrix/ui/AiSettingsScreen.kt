@@ -58,12 +58,13 @@ fun AiSettingsScreen(
         prefs.edit().putString(key, value).apply()
     }
 
-    val appBg = Color(0xFF070504)
-    val cardBg = Color(0xFF161210)
-    val iconBg = Color(0xFF2A1F1B)
-    val iconTint = Color(0xFFD6B5A6)
-    val textColor = Color(0xFFF7EBE5)
-    val headerColor = Color(0xFFD6B5A6)
+    val isDark = com.musicplayer.lytrix.ui.theme.LocalIsDarkTheme.current
+    val appBg = if (isDark) Color(0xFF070504) else MaterialTheme.colorScheme.background
+    val cardBg = if (isDark) Color(0xFF161210) else MaterialTheme.colorScheme.surfaceContainerHigh
+    val iconBg = if (isDark) Color(0xFF2A1F1B) else MaterialTheme.colorScheme.surfaceContainerHighest
+    val iconTint = if (isDark) Color(0xFFD6B5A6) else MaterialTheme.colorScheme.primary
+    val textColor = if (isDark) Color(0xFFF7EBE5) else MaterialTheme.colorScheme.onSurface
+    val headerColor = if (isDark) Color(0xFFD6B5A6) else MaterialTheme.colorScheme.primary
     val accentRed = Color(0xFFD32F2F)
 
     var showProviderDialog by remember { mutableStateOf(false) }

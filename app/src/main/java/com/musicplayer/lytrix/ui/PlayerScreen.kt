@@ -321,6 +321,25 @@ fun PlayerScreen(onNavigateToOnlineSettings: () -> Unit = {},
 
     BackHandler(enabled = isNowPlayingExpanded) { isNowPlayingExpanded = false }
 
+    val playerView = androidx.compose.ui.platform.LocalView.current
+    val isDarkTheme = com.musicplayer.lytrix.ui.theme.LocalIsDarkTheme.current
+    DisposableEffect(isNowPlayingExpanded, isDarkTheme, playerView) {
+        if (!playerView.isInEditMode && !isDarkTheme) {
+            val window = (playerView.context as? android.app.Activity)?.window
+            if (window != null) {
+                androidx.core.view.WindowCompat.getInsetsController(window, playerView).isAppearanceLightStatusBars = !isNowPlayingExpanded
+            }
+        }
+        onDispose {
+            if (!playerView.isInEditMode && !isDarkTheme) {
+                val window = (playerView.context as? android.app.Activity)?.window
+                if (window != null) {
+                    androidx.core.view.WindowCompat.getInsetsController(window, playerView).isAppearanceLightStatusBars = true
+                }
+            }
+        }
+    }
+
     BackHandler(enabled = isSearchExpanded) {
         isSearchExpanded = false
         viewModel.setSearchQuery("")

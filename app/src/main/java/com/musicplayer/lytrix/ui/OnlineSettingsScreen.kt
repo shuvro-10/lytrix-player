@@ -97,12 +97,13 @@ fun OnlineSettingsScreen(
         cookieState.isNotBlank() && "SAPISID" in parseCookieString(cookieState)
     }
 
-    val appBg = Color(0xFF070504)
-    val cardBg = Color(0xFF161210)
-    val iconBg = Color(0xFF2A1F1B)
-    val iconTint = Color(0xFFD6B5A6)
-    val textColor = Color(0xFFF7EBE5)
-    val headerColor = Color(0xFFD6B5A6)
+    val isDark = com.musicplayer.lytrix.ui.theme.LocalIsDarkTheme.current
+    val appBg = if (isDark) Color(0xFF070504) else MaterialTheme.colorScheme.background
+    val cardBg = if (isDark) Color(0xFF161210) else MaterialTheme.colorScheme.surfaceContainerHigh
+    val iconBg = if (isDark) Color(0xFF2A1F1B) else MaterialTheme.colorScheme.surfaceContainerHighest
+    val iconTint = if (isDark) Color(0xFFD6B5A6) else MaterialTheme.colorScheme.primary
+    val textColor = if (isDark) Color(0xFFF7EBE5) else MaterialTheme.colorScheme.onSurface
+    val headerColor = if (isDark) Color(0xFFD6B5A6) else MaterialTheme.colorScheme.primary
     val logoutRed = Color(0xFFE57373)
 
     // ── Logout Confirmation Dialog ───────────────────────────────────────────
@@ -940,8 +941,8 @@ fun OnlineSettingsScreen(
         val selectedSet = com.musicplayer.lytrix.service.SponsorBlockManager.parseCategories(sponsorBlockCategoriesRaw)
         AlertDialog(
             onDismissRequest = { showSponsorBlockCategoriesDialog = false },
-            containerColor = Color(0xFF1A181C),
-            title = { Text("SponsorBlock Categories", color = Color.White, fontWeight = FontWeight.Bold) },
+            containerColor = if (isDark) Color(0xFF1A181C) else MaterialTheme.colorScheme.surfaceContainerHigh,
+            title = { Text("SponsorBlock Categories", color = if (isDark) Color.White else MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Bold) },
             text = {
                 Column {
                     com.musicplayer.lytrix.service.SponsorBlockManager.ALL_CATEGORIES.forEach { category ->
@@ -969,7 +970,7 @@ fun OnlineSettingsScreen(
                             )
                             Text(
                                 text = com.musicplayer.lytrix.service.SponsorBlockManager.categoryDisplayName(category),
-                                color = Color.White,
+                                color = if (isDark) Color.White else MaterialTheme.colorScheme.onSurface,
                                 fontSize = 14.sp
                             )
                         }

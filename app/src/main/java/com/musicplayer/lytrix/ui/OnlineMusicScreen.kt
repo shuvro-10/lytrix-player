@@ -2264,7 +2264,7 @@ fun OnlineMusicScreen(viewModel: PlayerViewModel, onClose: () -> Unit = {}, onNa
                                             Icon(
                                                 Icons.Default.Search,
                                                 contentDescription = "Search",
-                                                tint = Color.White
+                                                tint = MaterialTheme.colorScheme.onBackground
                                             )
                                         }
                                     }
@@ -2277,12 +2277,12 @@ fun OnlineMusicScreen(viewModel: PlayerViewModel, onClose: () -> Unit = {}, onNa
                                     exit = fadeOut() + slideOutHorizontally(targetOffsetX = { fullWidth -> fullWidth })
                                 ) {
                                     Box(
-                                        modifier = Modifier.fillMaxWidth().height(52.dp).clip(RoundedCornerShape(26.dp)).background(Color(0xFF2D2D2D)),
+                                        modifier = Modifier.fillMaxWidth().height(52.dp).clip(RoundedCornerShape(26.dp)).background(MaterialTheme.colorScheme.surfaceContainerHigh),
                                         contentAlignment = Alignment.CenterStart
                                     ) {
                                         Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(horizontal = 16.dp)) {
                                             IconButton(onClick = { isLibrarySearchActive = false; librarySearchQuery = "" }, modifier = Modifier.size(24.dp)) {
-                                                Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = Color.White)
+                                                Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = MaterialTheme.colorScheme.onSurface)
                                             }
                                             Spacer(modifier = Modifier.width(12.dp))
                                             androidx.compose.foundation.text.BasicTextField(
@@ -2290,18 +2290,18 @@ fun OnlineMusicScreen(viewModel: PlayerViewModel, onClose: () -> Unit = {}, onNa
                                                 onValueChange = { librarySearchQuery = it },
                                                 modifier = Modifier.weight(1f),
                                                 singleLine = true,
-                                                textStyle = androidx.compose.ui.text.TextStyle(color = Color.White, fontSize = 16.sp),
+                                                textStyle = androidx.compose.ui.text.TextStyle(color = MaterialTheme.colorScheme.onSurface, fontSize = 16.sp),
                                                 cursorBrush = androidx.compose.ui.graphics.SolidColor(accentColor),
                                                 decorationBox = { innerTextField ->
                                                     if (librarySearchQuery.isEmpty()) {
-                                                        Text("Find in ${currentSubTab.lowercase()}...", color = Color.Gray, fontSize = 15.sp)
+                                                        Text("Find in ${currentSubTab.lowercase()}...", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 15.sp)
                                                     }
                                                     innerTextField()
                                                 }
                                             )
                                             if (librarySearchQuery.isNotEmpty()) {
                                                 IconButton(onClick = { librarySearchQuery = "" }, modifier = Modifier.size(24.dp)) {
-                                                    Icon(Icons.Default.Clear, contentDescription = "Clear", tint = Color.White)
+                                                    Icon(Icons.Default.Clear, contentDescription = "Clear", tint = MaterialTheme.colorScheme.onSurface)
                                                 }
                                             }
                                         }
@@ -2442,14 +2442,14 @@ fun OnlineMusicScreen(viewModel: PlayerViewModel, onClose: () -> Unit = {}, onNa
                                                     Row(verticalAlignment = Alignment.CenterVertically) {
                                                         Box {
                                                             Row(modifier = Modifier.clip(RoundedCornerShape(24.dp)).border(1.dp, Color.Gray.copy(alpha=0.3f), RoundedCornerShape(24.dp)).clickable { showPlSortMenu = true }.padding(horizontal = 14.dp, vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
-                                                                Text(text = plSortOrder, style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.SemiBold), color = Color.White)
+                                                                Text(text = plSortOrder, style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.SemiBold), color = MaterialTheme.colorScheme.onSurface)
                                                                 Spacer(modifier = Modifier.width(6.dp))
-                                                                Icon(Icons.Default.KeyboardArrowDown, contentDescription = null, tint = Color.White, modifier = Modifier.size(16.dp))
+                                                                Icon(Icons.Default.KeyboardArrowDown, contentDescription = null, tint = MaterialTheme.colorScheme.onSurface, modifier = Modifier.size(16.dp))
                                                             }
-                                                            DropdownMenu(expanded = showPlSortMenu, onDismissRequest = { showPlSortMenu = false }, modifier = Modifier.background(Color(0xFF2D2D2D))) {
-                                                                DropdownMenuItem(text = { Text("Recently added", color = Color.White) }, onClick = { plSortOrder = "Recently added"; showPlSortMenu = false })
-                                                                DropdownMenuItem(text = { Text("Oldest", color = Color.White) }, onClick = { plSortOrder = "Oldest"; showPlSortMenu = false })
-                                                                DropdownMenuItem(text = { Text("A → Z", color = Color.White) }, onClick = { plSortOrder = "A → Z"; showPlSortMenu = false })
+                                                            DropdownMenu(expanded = showPlSortMenu, onDismissRequest = { showPlSortMenu = false }, modifier = Modifier.background(MaterialTheme.colorScheme.surfaceContainerHigh)) {
+                                                                DropdownMenuItem(text = { Text("Recently added", color = MaterialTheme.colorScheme.onSurface) }, onClick = { plSortOrder = "Recently added"; showPlSortMenu = false })
+                                                                DropdownMenuItem(text = { Text("Oldest", color = MaterialTheme.colorScheme.onSurface) }, onClick = { plSortOrder = "Oldest"; showPlSortMenu = false })
+                                                                DropdownMenuItem(text = { Text("A → Z", color = MaterialTheme.colorScheme.onSurface) }, onClick = { plSortOrder = "A → Z"; showPlSortMenu = false })
                                                             }
                                                         }
                                                         Spacer(modifier = Modifier.width(12.dp))
@@ -2461,7 +2461,7 @@ fun OnlineMusicScreen(viewModel: PlayerViewModel, onClose: () -> Unit = {}, onNa
                                                             }
                                                         }
                                                     }
-                                                    Row(modifier = Modifier.clip(CircleShape).background(Color(0xFF2D2D2D)).padding(4.dp), verticalAlignment = Alignment.CenterVertically) {
+                                                    Row(modifier = Modifier.clip(CircleShape).background(MaterialTheme.colorScheme.surfaceContainerHigh).padding(4.dp), verticalAlignment = Alignment.CenterVertically) {
                                                         Box(modifier = Modifier.size(32.dp).clip(CircleShape).background(if (!isGridView) accentColor else Color.Transparent).clickable { isGridView = false }, contentAlignment = Alignment.Center) { Icon(Icons.Default.List, contentDescription = null, tint = if (!isGridView) Color.Black else Color.Gray, modifier = Modifier.size(16.dp)) }
                                                         Box(modifier = Modifier.size(32.dp).clip(CircleShape).background(if (isGridView) accentColor else Color.Transparent).clickable { isGridView = true }, contentAlignment = Alignment.Center) { Icon(Icons.Default.GridView, contentDescription = null, tint = if (isGridView) Color.Black else Color.Gray, modifier = Modifier.size(16.dp)) }
                                                     }
@@ -2766,29 +2766,29 @@ fun OnlineMusicScreen(viewModel: PlayerViewModel, onClose: () -> Unit = {}, onNa
                                                 ) {
                                                     Box {
                                                         Row(
-                                                            modifier = Modifier.clip(RoundedCornerShape(24.dp)).background(Color(0xFF2D2D2D))
+                                                            modifier = Modifier.clip(RoundedCornerShape(24.dp)).background(MaterialTheme.colorScheme.surfaceContainerHigh)
                                                                 .clickable { showArtistFilterMenu = true }.padding(horizontal = 14.dp, vertical = 8.dp),
                                                             verticalAlignment = Alignment.CenterVertically
                                                         ) {
-                                                            Text(text = artistFilter, style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.SemiBold), color = Color.White)
+                                                            Text(text = artistFilter, style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.SemiBold), color = MaterialTheme.colorScheme.onSurface)
                                                             Spacer(modifier = Modifier.width(6.dp))
-                                                            Icon(Icons.Default.KeyboardArrowDown, contentDescription = null, tint = Color.White, modifier = Modifier.size(16.dp))
+                                                            Icon(Icons.Default.KeyboardArrowDown, contentDescription = null, tint = MaterialTheme.colorScheme.onSurface, modifier = Modifier.size(16.dp))
                                                         }
                                                         DropdownMenu(
                                                             expanded = showArtistFilterMenu,
                                                             onDismissRequest = { showArtistFilterMenu = false },
-                                                            modifier = Modifier.background(Color(0xFF2D2D2D))
+                                                            modifier = Modifier.background(MaterialTheme.colorScheme.surfaceContainerHigh)
                                                         ) {
                                                             DropdownMenuItem(
-                                                                text = { Text("All Artists (Local)", color = Color.White) },
+                                                                text = { Text("All Artists (Local)", color = MaterialTheme.colorScheme.onSurface) },
                                                                 onClick = { artistFilter = "All Artists"; showArtistFilterMenu = false })
                                                             DropdownMenuItem(
-                                                                text = { Text("Subscribed (Online)", color = Color.White) },
+                                                                text = { Text("Subscribed (Online)", color = MaterialTheme.colorScheme.onSurface) },
                                                                 onClick = { artistFilter = "Subscribed"; showArtistFilterMenu = false })
                                                         }
                                                     }
                                                     Row(
-                                                        modifier = Modifier.clip(CircleShape).background(Color(0xFF2D2D2D)).padding(4.dp),
+                                                        modifier = Modifier.clip(CircleShape).background(MaterialTheme.colorScheme.surfaceContainerHigh).padding(4.dp),
                                                         verticalAlignment = Alignment.CenterVertically
                                                     ) {
                                                         Box(
@@ -9109,13 +9109,13 @@ fun SearchScreen(
                 }
                 Box {
                     IconButton(onClick = { showGlobalSearchFilter = true }) {
-                        Icon(Icons.Default.FilterList, contentDescription = "Filter", tint = Color.White)
+                        Icon(Icons.Default.FilterList, contentDescription = "Filter", tint = MaterialTheme.colorScheme.onBackground)
                     }
-                    DropdownMenu(expanded = showGlobalSearchFilter, onDismissRequest = { showGlobalSearchFilter = false }, modifier = Modifier.background(Color(0xFF2D2D2D))) {
-                        DropdownMenuItem(text = { Text("YouTube Music", color = if (globalSearchSource == "YouTube Music") accentColor else Color.White) }, onClick = { globalSearchSource = "YouTube Music"; showGlobalSearchFilter = false })
-                        DropdownMenuItem(text = { Text("JioSaavn", color = if (globalSearchSource == "JioSaavn") accentColor else Color.White) }, onClick = { globalSearchSource = "JioSaavn"; showGlobalSearchFilter = false })
-                        DropdownMenuItem(text = { Text("Podcasts", color = if (globalSearchSource == "Podcasts") accentColor else Color.White) }, onClick = { globalSearchSource = "Podcasts"; showGlobalSearchFilter = false })
-                        DropdownMenuItem(text = { Text("Audiobooks", color = if (globalSearchSource == "Audiobooks") accentColor else Color.White) }, onClick = { globalSearchSource = "Audiobooks"; showGlobalSearchFilter = false })
+                    DropdownMenu(expanded = showGlobalSearchFilter, onDismissRequest = { showGlobalSearchFilter = false }, modifier = Modifier.background(MaterialTheme.colorScheme.surfaceContainerHigh)) {
+                        DropdownMenuItem(text = { Text("YouTube Music", color = if (globalSearchSource == "YouTube Music") accentColor else MaterialTheme.colorScheme.onSurface) }, onClick = { globalSearchSource = "YouTube Music"; showGlobalSearchFilter = false })
+                        DropdownMenuItem(text = { Text("JioSaavn", color = if (globalSearchSource == "JioSaavn") accentColor else MaterialTheme.colorScheme.onSurface) }, onClick = { globalSearchSource = "JioSaavn"; showGlobalSearchFilter = false })
+                        DropdownMenuItem(text = { Text("Podcasts", color = if (globalSearchSource == "Podcasts") accentColor else MaterialTheme.colorScheme.onSurface) }, onClick = { globalSearchSource = "Podcasts"; showGlobalSearchFilter = false })
+                        DropdownMenuItem(text = { Text("Audiobooks", color = if (globalSearchSource == "Audiobooks") accentColor else MaterialTheme.colorScheme.onSurface) }, onClick = { globalSearchSource = "Audiobooks"; showGlobalSearchFilter = false })
                     }
                 }
             }
@@ -9133,7 +9133,7 @@ fun SearchScreen(
                                 }.padding(vertical = 12.dp), verticalAlignment = Alignment.CenterVertically) {
                                     Icon(Icons.Default.History, contentDescription = null, tint = Color.Gray, modifier = Modifier.size(20.dp))
                                     Spacer(modifier = Modifier.width(16.dp))
-                                    Text(text, color = Color.White, fontSize = 16.sp, modifier = Modifier.weight(1f))
+                                    Text(text, color = MaterialTheme.colorScheme.onBackground, fontSize = 16.sp, modifier = Modifier.weight(1f))
                                     IconButton(onClick = { viewModel.removeSearchQuery(context, text) }, modifier = Modifier.size(24.dp)) { Icon(Icons.Default.Close, contentDescription = "Remove", tint = Color.Gray) }
                                 }
                             }
@@ -9146,7 +9146,7 @@ fun SearchScreen(
                                 }.padding(vertical = 12.dp), verticalAlignment = Alignment.CenterVertically) {
                                     Icon(Icons.Default.Search, contentDescription = null, tint = Color.Gray, modifier = Modifier.size(20.dp))
                                     Spacer(modifier = Modifier.width(16.dp))
-                                    Text(text, color = Color.White, fontSize = 16.sp)
+                                    Text(text, color = MaterialTheme.colorScheme.onBackground, fontSize = 16.sp)
                                 }
                             }
                         }
@@ -9197,7 +9197,7 @@ fun SearchScreen(
                                         val isVerticalSection = section.title.equals("Top results", ignoreCase = true) || section.title.equals("Songs", ignoreCase = true) || section.title.equals("Videos", ignoreCase = true) || section.title.equals("Episodes", ignoreCase = true)
                                         if (isVerticalSection) {
                                             item {
-                                                Text(text = section.title, color = Color.White, fontSize = 20.sp, fontWeight = FontWeight.ExtraBold, modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 8.dp))
+                                                Text(text = section.title, color = MaterialTheme.colorScheme.onBackground, fontSize = 20.sp, fontWeight = FontWeight.ExtraBold, modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 8.dp))
                                             }
                                             section.tracks.forEach { track ->
                                                 rowWithBanner(ads) {
@@ -9403,12 +9403,12 @@ private fun SearchSongListItem(title: String, artist: String, playCount: String,
         }
         Spacer(modifier = Modifier.width(14.dp))
         Column(modifier = Modifier.weight(1f)) {
-            Text(text = title, color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.SemiBold, maxLines = 1, overflow = TextOverflow.Ellipsis)
+            Text(text = title, color = MaterialTheme.colorScheme.onSurface, fontSize = 16.sp, fontWeight = FontWeight.SemiBold, maxLines = 1, overflow = TextOverflow.Ellipsis)
             Spacer(modifier = Modifier.height(2.dp))
-            Text(text = subtitleText, color = Color.White.copy(alpha=0.6f), fontSize = 13.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
+            Text(text = subtitleText, color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 13.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
         }
         Spacer(modifier = Modifier.width(8.dp))
-        IconButton(onClick = onMoreClick, modifier = Modifier.size(32.dp)) { Icon(Icons.Default.MoreVert, contentDescription = "More", tint = Color.White) }
+        IconButton(onClick = onMoreClick, modifier = Modifier.size(32.dp)) { Icon(Icons.Default.MoreVert, contentDescription = "More", tint = MaterialTheme.colorScheme.onSurfaceVariant) }
     }
 }
 
@@ -9500,7 +9500,7 @@ private fun SearchHorizontalSection(
         queueTracksOverride ?: filterQueueableYtSongs(tracks)
     }
     Column(modifier = Modifier.fillMaxWidth().padding(vertical = 12.dp)) {
-        Text(text = title, color = Color.White, fontSize = 20.sp, fontWeight = FontWeight.ExtraBold, modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 12.dp))
+        Text(text = title, color = MaterialTheme.colorScheme.onBackground, fontSize = 20.sp, fontWeight = FontWeight.ExtraBold, modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 12.dp))
         LazyRow(contentPadding = PaddingValues(horizontal = 16.dp), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
             items(tracks) { track ->
                 val kind = classifyYtTrack(track)
@@ -9538,8 +9538,8 @@ private fun SearchHorizontalSection(
                         }
                     }
                     Spacer(modifier = Modifier.height(8.dp))
-                    Text(text = track.title, color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.SemiBold, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                    Text(text = subtitleText, color = Color.Gray, fontSize = 12.sp, maxLines = 2, overflow = TextOverflow.Ellipsis)
+                    Text(text = track.title, color = MaterialTheme.colorScheme.onSurface, fontSize = 14.sp, fontWeight = FontWeight.SemiBold, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                    Text(text = subtitleText, color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 12.sp, maxLines = 2, overflow = TextOverflow.Ellipsis)
                 }
             }
         }
@@ -9769,11 +9769,11 @@ private fun YtSongMenuBody(
             PremiumMenuSquareButton(icon = Icons.Default.Info, text = "Details", modifier = Modifier.weight(1f), onClick = onDetails)
         }
         if (isMetroGuest) {
-            Column(modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)).background(Color(0xFF2A2A2A))) {
+            Column(modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)).background(MaterialTheme.colorScheme.surfaceContainerHigh)) {
                 LytrixBottomSheetListItem(icon = Icons.Default.MusicNote, text = "Suggest to host", onClick = onSuggestToHost)
             }
         }
-        Column(modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)).background(Color(0xFF2A2A2A))) {
+        Column(modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)).background(MaterialTheme.colorScheme.surfaceContainerHigh)) {
             LytrixBottomSheetListItem(icon = Icons.Default.PlaylistPlay, text = "Play next", onClick = onPlayNext)
             LytrixBottomSheetListItem(
                 icon = if (isDownloadedLocally) Icons.Default.Delete else Icons.Default.Download,
@@ -9788,7 +9788,7 @@ private fun YtSongMenuBody(
                 )
             }
         }
-        Column(modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)).background(Color(0xFF2A2A2A))) {
+        Column(modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)).background(MaterialTheme.colorScheme.surfaceContainerHigh)) {
             LytrixBottomSheetListItem(icon = Icons.Default.Radio, text = "Start radio", onClick = onStartRadio)
             LytrixBottomSheetListItem(icon = Icons.Default.Person, text = "Go to Artist", onClick = onGoToArtist)
             if (onViewAlbum != null) {
@@ -9799,7 +9799,7 @@ private fun YtSongMenuBody(
                 )
             }
         }
-        Column(modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)).background(Color(0xFF2A2A2A))) {
+        Column(modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)).background(MaterialTheme.colorScheme.surfaceContainerHigh)) {
             if (showPinToSpeedDial) {
                 LytrixBottomSheetListItem(
                     icon = if (isPinnedToSpeedDial) Icons.Default.Close else Icons.Default.PushPin,
