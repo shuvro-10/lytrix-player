@@ -7,6 +7,7 @@ import com.musicplayer.lytrix.ui.component.NowPlayingVideoOverlayControls
 
 import android.app.Activity
 import android.content.Context
+import android.content.pm.ActivityInfo
 import android.graphics.drawable.BitmapDrawable
 import android.media.AudioAttributes
 import android.media.AudioDeviceCallback
@@ -28,6 +29,27 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.automirrored.rounded.ArrowBack
+import androidx.compose.material.icons.filled.AspectRatio
+import androidx.compose.material.icons.filled.PictureInPictureAlt
+import androidx.compose.material.icons.rounded.Pause
+import androidx.compose.material.icons.rounded.PlayArrow
+import androidx.compose.material.icons.rounded.SkipNext
+import androidx.compose.material.icons.rounded.SkipPrevious
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.Slider
+import androidx.compose.material3.SliderDefaults
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.graphics.Brush
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
+import com.musicplayer.lytrix.ui.component.findActivity
+import com.musicplayer.lytrix.ui.component.safeEnterPip
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
@@ -1042,4 +1064,371 @@ fun formatTrackTime(millis: Long): String {
     val minutes = totalSeconds / 60L
     val seconds = totalSeconds % 60L
     return String.format(Locale.getDefault(), "%02d:%02d", minutes, seconds)
+}
+
+/**
+ * Universal Landscape Edge-to-Edge Fullscreen Video Player.
+ * Used across all NowPlaying styles (M3, Expressive, Apple Music, Cinema, Classic).
+ */
+@Composable
+fun NowPlayingLandscapeVideoFullScreen(
+    viewModel: PlayerViewModel,
+    song: Song,
+    artData: Any? = null,
+    isPlaying: Boolean,
+    isBuffering: Boolean,
+    currentPosition: Long,
+    duration: Long,
+    accentColor: Color,
+    contentColorOnAccent: Color,
+    gesturesEnabled: Boolean = true,
+    isGuest: Boolean = false,
+    onPlayPause: () -> Unit,
+    onSkipNext: () -> Unit,
+    onSkipPrevious: () -> Unit,
+    onSeek: (Long) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val context = LocalContext.current
+    val activityContext = context.findActivity()
+
+    // 1. Hardware / Gesture Back Handling - Resets orientation to UNSPECIFIED (never hard locks portrait)
+    BackHandler(enabled = true) {
+        viewModel.isLandscapeVideoFullscreen.value = false
+        activityContext?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
+    }
+
+    // 2. Immersive System Bars Hiding while in Fullscreen
+    val window = activityContext?.window
+    DisposableEffect(Unit) {
+        window?.let { win ->
+            val insetsController = WindowCompat.getInsetsController(win, win.decorView)
+            insetsController.hide(WindowInsetsCompat.Type.systemBars())
+            insetsController.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+        }
+        onDispose {
+            window?.let { win ->
+                WindowCompat.getInsetsController(win, win.decorView).show(WindowInsetsCompat.Type.systemBars())
+            }
+        }
+    }
+
+    val isVideoPlayerReady by viewModel.isVideoPlayerReady.collectAsState()
+    val exoPlayer = viewModel.getVideoPlayer()
+    val currentResizeMode by viewModel.videoResizeMode.collectAsState()
+    var showControls by remember { mutableStateOf(true) }
+    val coroutineScope = rememberCoroutineScope()
+    val holdScrubState = rememberHoldToScrubState(currentPosition, duration, onSeek)
+
+    var scrubbingFraction by remember { mutableStateOf<Float?>(null) }
+    val safeDuration = duration.coerceAtLeast(1L)
+    val shownPosMs = holdScrubState.draggingPosition
+        ?: scrubbingFraction?.let { (it * safeDuration).toLong() }
+        ?: currentPosition.coerceIn(0L, safeDuration)
+    val shownFraction = (shownPosMs.toFloat() / safeDuration.toFloat()).coerceIn(0f, 1f)
+
+    LaunchedEffect(showControls, isPlaying) {
+        if (showControls && isPlaying) {
+            delay(3500)
+            showControls = false
+        }
+    }
+
+    PlayerCoverWithGestures(
+        gesturesEnabled = gesturesEnabled,
+        isGuest = isGuest,
+        isPlaying = isPlaying,
+        currentPosition = currentPosition,
+        duration = duration,
+        onSeek = { seekPos ->
+            onSeek(seekPos)
+            val mapped = viewModel.mapAudioToVideoPosition(song.id.toString(), seekPos)
+            exoPlayer?.seekTo(mapped)
+            viewModel.forceSyncToFirebase()
+        },
+        onPlayPause = {
+            onPlayPause()
+            viewModel.forceSyncToFirebase()
+        },
+        onTap = { showControls = !showControls },
+        swipeEnabled = false,
+        modifier = modifier
+            .fillMaxSize()
+            .background(Color.Black)
+    ) {
+        // High-res Album Art Underneath (shown until video loads)
+        AsyncImage(
+            model = artData ?: (song.albumArtUriString ?: song.uriString),
+            contentDescription = null,
+            contentScale = ContentScale.Fit,
+            modifier = Modifier.fillMaxSize()
+        )
+
+        if (exoPlayer != null) {
+            AndroidView(
+                factory = { ctx ->
+                    (LayoutInflater.from(ctx).inflate(
+                        R.layout.apple_music_texture_player_view,
+                        null
+                    ) as PlayerView).apply {
+                        useController = false
+                        controllerAutoShow = false
+                        isClickable = false
+                        isFocusable = false
+                        setOnTouchListener { _, _ -> false }
+                        resizeMode = currentResizeMode
+                        subtitleView?.visibility = android.view.View.GONE
+                        setBackgroundColor(android.graphics.Color.TRANSPARENT)
+                        hideController()
+                    }
+                },
+                update = { pv ->
+                    if (pv.player != exoPlayer) {
+                        pv.player = exoPlayer
+                    }
+                    pv.resizeMode = currentResizeMode
+                    pv.subtitleView?.visibility = android.view.View.GONE
+                },
+                modifier = Modifier.fillMaxSize()
+            )
+        }
+
+        if (!isVideoPlayerReady || exoPlayer == null) {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                LytrixExpressiveSpinner(color = accentColor, size = 42.dp)
+            }
+        }
+
+        // Top Navigation & Control Bar in Landscape Fullscreen
+        AnimatedVisibility(
+            visible = showControls,
+            enter = fadeIn() + slideInVertically(initialOffsetY = { -50 }),
+            exit = fadeOut() + slideOutVertically(targetOffsetY = { -50 }),
+            modifier = Modifier
+                .align(Alignment.TopCenter)
+                .fillMaxWidth()
+                .padding(horizontal = 20.dp, vertical = 12.dp)
+                .statusBarsPadding()
+        ) {
+            Box(modifier = Modifier.fillMaxWidth()) {
+                // Left: Back / Exit Fullscreen Button
+                IconButton(
+                    onClick = {
+                        viewModel.isLandscapeVideoFullscreen.value = false
+                        activityContext?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
+                    },
+                    modifier = Modifier
+                        .align(Alignment.CenterStart)
+                        .size(40.dp)
+                        .background(Color.Black.copy(alpha = 0.65f), CircleShape)
+                ) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Rounded.ArrowBack,
+                        contentDescription = "Exit Fullscreen",
+                        tint = Color.White,
+                        modifier = Modifier.size(22.dp)
+                    )
+                }
+
+                // Center: Song | Video Capsule
+                Row(
+                    modifier = Modifier
+                        .align(Alignment.Center)
+                        .height(38.dp)
+                        .clip(RoundedCornerShape(19.dp))
+                        .background(Color.Black.copy(alpha = 0.65f))
+                        .border(1.dp, Color.White.copy(alpha = 0.15f), RoundedCornerShape(19.dp))
+                        .padding(3.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxHeight()
+                            .clip(RoundedCornerShape(16.dp))
+                            .clickable {
+                                viewModel.isLandscapeVideoFullscreen.value = false
+                                activityContext?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
+                                viewModel.switchToAudioMode(song)
+                            }
+                            .padding(horizontal = 16.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text("Song", color = Color.White.copy(alpha = 0.7f), fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                    }
+                    Box(
+                        modifier = Modifier
+                            .fillMaxHeight()
+                            .clip(RoundedCornerShape(16.dp))
+                            .background(accentColor)
+                            .padding(horizontal = 16.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text("Video", color = contentColorOnAccent, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                    }
+                }
+
+                // Right: Scale (Fit/Zoom) & PiP Controls
+                Row(
+                    modifier = Modifier.align(Alignment.CenterEnd),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    // Scale / Zoom Toggle
+                    IconButton(
+                        onClick = { viewModel.toggleVideoResizeMode() },
+                        modifier = Modifier
+                            .size(40.dp)
+                            .background(
+                                if (currentResizeMode == AspectRatioFrameLayout.RESIZE_MODE_ZOOM)
+                                    Color(0xFF2196F3).copy(alpha = 0.85f)
+                                else
+                                    Color.Black.copy(alpha = 0.65f),
+                                CircleShape
+                            )
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.AspectRatio,
+                            contentDescription = "Aspect Ratio",
+                            tint = Color.White,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
+
+                    // PiP Button
+                    IconButton(
+                        onClick = {
+                            safeEnterPip(activityContext, viewModel)
+                        },
+                        modifier = Modifier
+                            .size(40.dp)
+                            .background(Color.Black.copy(alpha = 0.65f), CircleShape)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.PictureInPictureAlt,
+                            contentDescription = "PiP",
+                            tint = Color.White,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
+                }
+            }
+        }
+
+        // Bottom Controls Overlay
+        AnimatedVisibility(
+            visible = showControls,
+            enter = fadeIn() + slideInVertically(initialOffsetY = { 50 }),
+            exit = fadeOut() + slideOutVertically(targetOffsetY = { 50 }),
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .fillMaxWidth()
+                .background(Brush.verticalGradient(listOf(Color.Transparent, Color.Black.copy(alpha = 0.85f))))
+                .navigationBarsPadding()
+                .padding(horizontal = 32.dp, vertical = 16.dp)
+        ) {
+            Column {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(formatTrackTime(shownPosMs), fontSize = 12.sp, color = Color.White)
+                    Slider(
+                        value = shownFraction,
+                        onValueChange = { frac ->
+                            if (!isGuest) scrubbingFraction = frac
+                        },
+                        onValueChangeFinished = {
+                            if (!isGuest) {
+                                scrubbingFraction?.let { frac ->
+                                    val target = (frac * safeDuration).toLong()
+                                    onSeek(target)
+                                    val mapped = viewModel.mapAudioToVideoPosition(song.id.toString(), target)
+                                    exoPlayer?.seekTo(mapped)
+                                    viewModel.forceSyncToFirebase()
+                                }
+                            }
+                            scrubbingFraction = null
+                        },
+                        colors = SliderDefaults.colors(
+                            thumbColor = accentColor,
+                            activeTrackColor = accentColor,
+                            inactiveTrackColor = Color.White.copy(alpha = 0.3f)
+                        ),
+                        modifier = Modifier
+                            .weight(1f)
+                            .padding(horizontal = 16.dp)
+                    )
+                    Text(formatTrackTime(duration), fontSize = 12.sp, color = Color.White)
+                }
+
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 8.dp),
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(48.dp)
+                            .clip(CircleShape)
+                            .holdToScrubTransport(
+                                enabled = !isGuest,
+                                scope = coroutineScope,
+                                onTap = onSkipPrevious,
+                                onHoldChanged = { holdScrubState.setRewind(it) }
+                            )
+                            .padding(9.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(Icons.Rounded.SkipPrevious, contentDescription = "Skip Previous", tint = Color.White, modifier = Modifier.size(34.dp))
+                    }
+                    Spacer(modifier = Modifier.width(32.dp))
+                    Box(
+                        modifier = Modifier
+                            .size(64.dp)
+                            .clip(CircleShape)
+                            .background(accentColor)
+                            .clickable {
+                                if (!isGuest) {
+                                    onPlayPause()
+                                    viewModel.forceSyncToFirebase()
+                                }
+                            },
+                        contentAlignment = Alignment.Center
+                    ) {
+                        if (isBuffering) {
+                            LytrixExpressiveSpinner(color = contentColorOnAccent, strokeWidth = 3.dp, size = 28.dp)
+                        } else {
+                            Icon(
+                                if (isPlaying) Icons.Rounded.Pause else Icons.Rounded.PlayArrow,
+                                contentDescription = "Play/Pause",
+                                tint = contentColorOnAccent,
+                                modifier = Modifier.size(36.dp)
+                            )
+                        }
+                    }
+                    Spacer(modifier = Modifier.width(32.dp))
+                    Box(
+                        modifier = Modifier
+                            .size(48.dp)
+                            .clip(CircleShape)
+                            .holdToScrubTransport(
+                                enabled = !isGuest,
+                                scope = coroutineScope,
+                                onTap = onSkipNext,
+                                onHoldChanged = { holdScrubState.setForward(it) }
+                            )
+                            .padding(9.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(Icons.Rounded.SkipNext, contentDescription = "Skip Next", tint = Color.White, modifier = Modifier.size(34.dp))
+                    }
+                }
+            }
+        }
+    }
 }

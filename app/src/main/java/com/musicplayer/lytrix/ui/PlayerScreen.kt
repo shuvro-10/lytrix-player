@@ -1353,117 +1353,25 @@ fun NowPlayingFullScreen(
                 }
         )
 
-        // 🔥 Landscape Immersive Mode - Status Bar Hide
-        val activityContext = context as? android.app.Activity
-        DisposableEffect(isLandscape, isVideoModeActive) {
-            val window = activityContext?.window
-            if (window != null) {
-                val insetsController = androidx.core.view.WindowCompat.getInsetsController(window, window.decorView)
-                if (isLandscape && isVideoModeActive) {
-                    insetsController.hide(androidx.core.view.WindowInsetsCompat.Type.systemBars())
-                    insetsController.systemBarsBehavior = androidx.core.view.WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
-                } else {
-                    insetsController.show(androidx.core.view.WindowInsetsCompat.Type.systemBars())
-                }
-            }
-            onDispose {
-                activityContext?.window?.let { win ->
-                    androidx.core.view.WindowCompat.getInsetsController(win, win.decorView).show(androidx.core.view.WindowInsetsCompat.Type.systemBars())
-                }
-            }
-        }
+        val isLandscapeVideoFullscreen by viewModel.isLandscapeVideoFullscreen.collectAsState()
 
-        if (isLandscape && isVideoModeActive) {
-            // 🔥 Landscape Video Player
-            val isVideoPlayerReady by viewModel.isVideoPlayerReady.collectAsState()
-            val exoPlayer = viewModel.getVideoPlayer()
-            var showControls by remember { mutableStateOf(true) }
-
-            LaunchedEffect(showControls, isPlaying) {
-                if (showControls && isPlaying) {
-                    delay(3500)
-                    showControls = false
-                }
-            }
-
-            PlayerCoverWithGestures(
-                gesturesEnabled = playerGesturesEnabled,
-                isGuest = isGuest,
+        if (isLandscape && isVideoModeActive && isLandscapeVideoFullscreen) {
+            com.musicplayer.lytrix.ui.player.NowPlayingLandscapeVideoFullScreen(
+                viewModel = viewModel,
+                song = song,
                 isPlaying = isPlaying,
+                isBuffering = isBuffering,
                 currentPosition = currentPosition,
                 duration = duration,
-                onSeek = { seekPos ->
-                    onSeek(seekPos)
-                    exoPlayer?.seekTo(seekPos)
-                    viewModel.forceSyncToFirebase()
-                },
-                onPlayPause = {
-                    onPlayPause()
-                    viewModel.forceSyncToFirebase()
-                },
-                onTap = { showControls = !showControls },
-                swipeEnabled = false,
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(Color.Black)
-            ) {
-                if (!isVideoPlayerReady || exoPlayer == null) {
-                    LytrixExpressiveSpinner(color = accentColor, size = 42.dp)
-                } else {
-                    androidx.compose.ui.viewinterop.AndroidView(
-                        factory = { ctx -> androidx.media3.ui.PlayerView(ctx).apply { useController = false; controllerAutoShow = false; resizeMode = androidx.media3.ui.AspectRatioFrameLayout.RESIZE_MODE_FIT; setBackgroundColor(android.graphics.Color.TRANSPARENT); hideController() } },
-                        update = { playerView -> if (playerView.player != exoPlayer) { playerView.player = exoPlayer } },
-                        modifier = Modifier.fillMaxSize()
-                    )
-                }
-
-                AnimatedVisibility(
-                    visible = showControls, enter = fadeIn() + slideInVertically(initialOffsetY = { -50 }), exit = fadeOut() + slideOutVertically(targetOffsetY = { -50 }),
-                    modifier = Modifier.align(Alignment.TopCenter).padding(top = 16.dp).statusBarsPadding()
-                ) {
-                    Row(
-                        modifier = Modifier.height(36.dp).clip(RoundedCornerShape(18.dp)).background(Color.Black.copy(alpha = 0.6f)).padding(4.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Box(modifier = Modifier.fillMaxHeight().clip(RoundedCornerShape(14.dp)).clickable { viewModel.switchToAudioMode(song) }.padding(horizontal = 16.dp), contentAlignment = Alignment.Center) { Text("Song", color = Color.Gray, fontSize = 12.sp, fontWeight = FontWeight.Bold) }
-                        Box(modifier = Modifier.fillMaxHeight().clip(RoundedCornerShape(14.dp)).background(Color.White.copy(alpha = 0.2f)).padding(horizontal = 16.dp), contentAlignment = Alignment.Center) { Text("Video", color = Color.White, fontSize = 12.sp, fontWeight = FontWeight.Bold) }
-                    }
-                }
-
-                AnimatedVisibility(
-                    visible = showControls, enter = fadeIn() + slideInVertically(initialOffsetY = { 50 }), exit = fadeOut() + slideOutVertically(targetOffsetY = { 50 }),
-                    modifier = Modifier.align(Alignment.BottomCenter).fillMaxWidth().background(Brush.verticalGradient(listOf(Color.Transparent, Color.Black.copy(alpha = 0.9f)))).navigationBarsPadding().padding(horizontal = 32.dp, vertical = 16.dp)
-                ) {
-                    Column {
-                        Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                            Text(String.format("%02d:%02d", (positionToShow / 1000) / 60, (positionToShow / 1000) % 60), fontSize = 12.sp, color = Color.White)
-                            Slider(
-                                value = (if (duration > 0) positionToShow.toFloat() / duration else 0f).coerceIn(0f, 1f),
-                                onValueChange = { if (!isGuest) draggingPosition = (it * duration).toLong() },
-                                onValueChangeFinished = { if (!isGuest) draggingPosition?.let { onSeek(it); viewModel.forceSyncToFirebase(); draggingPosition = null } },
-                                colors = SliderDefaults.colors(thumbColor = accentColor, activeTrackColor = accentColor, inactiveTrackColor = Color.White.copy(alpha = 0.3f)),
-                                modifier = Modifier.weight(1f).padding(horizontal = 16.dp)
-                            )
-                            Text(String.format("%02d:%02d", (duration / 1000) / 60, (duration / 1000) % 60), fontSize = 12.sp, color = Color.White)
-                        }
-
-                        Row(modifier = Modifier.fillMaxWidth().padding(top = 8.dp), horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically) {
-                            Box(modifier = Modifier.size(48.dp).pointerInput(Unit) { detectTapGestures(onPress = { if (!isGuest) { val job = coroutineScope.launch { delay(400); isPressingRewind = true }; tryAwaitRelease(); job.cancel(); if (!isPressingRewind) { onSkipPrevious(); viewModel.forceSyncToFirebase() }; isPressingRewind = false } }) }, contentAlignment = Alignment.Center) {
-                                Icon(Icons.Rounded.SkipPrevious, contentDescription = "Skip Previous", tint = Color.White, modifier = Modifier.size(34.dp))
-                            }
-                            Spacer(modifier = Modifier.width(32.dp))
-                            Box(modifier = Modifier.size(64.dp).clip(CircleShape).background(accentColor).clickable { if (!isGuest) { onPlayPause(); viewModel.forceSyncToFirebase() } }, contentAlignment = Alignment.Center) {
-                                if (isBuffering) LytrixExpressiveSpinner(color = Color.Black, strokeWidth = 3.dp, size = 28.dp)
-                                else Icon(if (isPlaying) Icons.Rounded.Pause else Icons.Rounded.PlayArrow, contentDescription = "Play/Pause", tint = Color.Black, modifier = Modifier.size(36.dp))
-                            }
-                            Spacer(modifier = Modifier.width(32.dp))
-                            Box(modifier = Modifier.size(48.dp).pointerInput(Unit) { detectTapGestures(onPress = { if (!isGuest) { val job = coroutineScope.launch { delay(400); isPressingForward = true }; tryAwaitRelease(); job.cancel(); if (!isPressingForward) { onSkipNext(); viewModel.forceSyncToFirebase() }; isPressingForward = false } }) }, contentAlignment = Alignment.Center) {
-                                Icon(Icons.Rounded.SkipNext, contentDescription = "Skip Next", tint = Color.White, modifier = Modifier.size(34.dp))
-                            }
-                        }
-                    }
-                }
-            }
+                accentColor = accentColor,
+                contentColorOnAccent = Color.Black,
+                gesturesEnabled = playerGesturesEnabled,
+                isGuest = isGuest,
+                onPlayPause = onPlayPause,
+                onSkipNext = onSkipNext,
+                onSkipPrevious = onSkipPrevious,
+                onSeek = onSeek
+            )
         } else {
             // 🔥 Normal UI (Portrait or Non-Video Landscape)
             Column(

@@ -4,6 +4,7 @@
 package com.musicplayer.lytrix.ui
 
 import com.musicplayer.lytrix.ui.component.NowPlayingVideoOverlayControls
+import com.musicplayer.lytrix.ui.player.NowPlayingLandscapeVideoFullScreen
 
 import android.content.Context
 import android.content.pm.ActivityInfo
@@ -479,22 +480,6 @@ fun MeldNowPlayingFullScreen(
     val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
     val activityContext = context as? android.app.Activity
     val currentResizeMode by viewModel.videoResizeMode.collectAsState()
-    DisposableEffect(isLandscape, isVideoModeActive) {
-        activityContext?.window?.let { window ->
-            val insetsController = WindowCompat.getInsetsController(window, window.decorView)
-            if (isLandscape && isVideoModeActive) {
-                insetsController.hide(WindowInsetsCompat.Type.systemBars())
-                insetsController.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
-            } else {
-                insetsController.show(WindowInsetsCompat.Type.systemBars())
-            }
-        }
-        onDispose {
-            activityContext?.window?.let { win ->
-                WindowCompat.getInsetsController(win, win.decorView).show(WindowInsetsCompat.Type.systemBars())
-            }
-        }
-    }
 
     DisposableEffect(Unit) {
         onDispose {
@@ -504,314 +489,26 @@ fun MeldNowPlayingFullScreen(
         }
     }
 
-    if (isLandscape && isVideoModeActive) {
-        // 🔥 Landscape Fullscreen Video Player (Edge-to-edge with hidden system bars & gestures)
-        BackHandler(enabled = isLandscape && isVideoModeActive) {
-            activityContext?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
-        }
+    val isLandscapeVideoFullscreen by viewModel.isLandscapeVideoFullscreen.collectAsState()
 
-        val isVideoPlayerReady by viewModel.isVideoPlayerReady.collectAsState()
-        val exoPlayer = viewModel.getVideoPlayer()
-        var showControls by remember { mutableStateOf(true) }
-
-        LaunchedEffect(showControls, isPlaying) {
-            if (showControls && isPlaying) {
-                delay(3500)
-                showControls = false
-            }
-        }
-
-        PlayerCoverWithGestures(
-            gesturesEnabled = playerGesturesEnabled,
-            isGuest = isGuest,
+    if (isLandscape && isVideoModeActive && isLandscapeVideoFullscreen) {
+        NowPlayingLandscapeVideoFullScreen(
+            viewModel = viewModel,
+            song = song,
+            artData = artData,
             isPlaying = isPlaying,
+            isBuffering = isBuffering,
             currentPosition = currentPosition,
             duration = duration,
-            onSeek = { seekPos ->
-                onSeek(seekPos)
-                val mappedSeek = viewModel.mapAudioToVideoPosition(song.id.toString(), seekPos)
-                exoPlayer?.seekTo(mappedSeek)
-                viewModel.forceSyncToFirebase()
-            },
-            onPlayPause = {
-                onPlayPause()
-                viewModel.forceSyncToFirebase()
-            },
-            onTap = { showControls = !showControls },
-            swipeEnabled = false,
-            modifier = Modifier
-                .fillMaxSize()
-                .background(Color.Black)
-        ) {
-            if (!isVideoPlayerReady || exoPlayer == null) {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    LytrixExpressiveSpinner(color = effectiveAccent, size = 42.dp)
-                }
-            } else {
-                androidx.compose.ui.viewinterop.AndroidView(
-                    factory = { ctx ->
-                        (android.view.LayoutInflater.from(ctx).inflate(
-                            com.musicplayer.lytrix.R.layout.apple_music_texture_player_view,
-                            null
-                        ) as androidx.media3.ui.PlayerView).apply {
-                            useController = false
-                            controllerAutoShow = false
-                            isClickable = false
-                            isFocusable = false
-                            setOnTouchListener { _, _ -> false }
-                            resizeMode = currentResizeMode
-                            subtitleView?.visibility = android.view.View.GONE
-                            setBackgroundColor(android.graphics.Color.TRANSPARENT)
-                            hideController()
-                        }
-                    },
-                    update = { playerView ->
-                        if (playerView.player != exoPlayer) {
-                            playerView.player = exoPlayer
-                        }
-                        playerView.resizeMode = currentResizeMode
-                        playerView.subtitleView?.visibility = android.view.View.GONE
-                    },
-                    modifier = Modifier.fillMaxSize()
-                )
-            }
-
-            // Top Navigation & Control Bar in Landscape Fullscreen
-            AnimatedVisibility(
-                visible = showControls,
-                enter = fadeIn() + slideInVertically(initialOffsetY = { -50 }),
-                exit = fadeOut() + slideOutVertically(targetOffsetY = { -50 }),
-                modifier = Modifier
-                    .align(Alignment.TopCenter)
-                    .fillMaxWidth()
-                    .padding(horizontal = 20.dp, vertical = 12.dp)
-                    .statusBarsPadding()
-            ) {
-                Box(modifier = Modifier.fillMaxWidth()) {
-                    // Left: Back / Exit Fullscreen Button
-                    IconButton(
-                        onClick = {
-                            activityContext?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
-                        },
-                        modifier = Modifier
-                            .align(Alignment.CenterStart)
-                            .size(40.dp)
-                            .background(Color.Black.copy(alpha = 0.65f), CircleShape)
-                    ) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Rounded.ArrowBack,
-                            contentDescription = "Exit Fullscreen",
-                            tint = Color.White,
-                            modifier = Modifier.size(22.dp)
-                        )
-                    }
-
-                    // Center: Song | Video Capsule
-                    Row(
-                        modifier = Modifier
-                            .align(Alignment.Center)
-                            .height(38.dp)
-                            .clip(RoundedCornerShape(19.dp))
-                            .background(Color.Black.copy(alpha = 0.65f))
-                            .border(1.dp, Color.White.copy(alpha = 0.15f), RoundedCornerShape(19.dp))
-                            .padding(3.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxHeight()
-                                .clip(RoundedCornerShape(16.dp))
-                                .clickable {
-                                    activityContext?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
-                                    viewModel.switchToAudioMode(song)
-                                }
-                                .padding(horizontal = 16.dp),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text("Song", color = Color.White.copy(alpha = 0.7f), fontSize = 12.sp, fontWeight = FontWeight.Bold)
-                        }
-                        Box(
-                            modifier = Modifier
-                                .fillMaxHeight()
-                                .clip(RoundedCornerShape(16.dp))
-                                .background(effectiveAccent)
-                                .padding(horizontal = 16.dp),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text("Video", color = contentColorOnAccent, fontSize = 12.sp, fontWeight = FontWeight.Bold)
-                        }
-                    }
-
-                    // Right: Scale (Fit/Zoom) & PiP Controls
-                    Row(
-                        modifier = Modifier.align(Alignment.CenterEnd),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        // Scale / Zoom Toggle
-                        IconButton(
-                            onClick = { viewModel.toggleVideoResizeMode() },
-                            modifier = Modifier
-                                .size(40.dp)
-                                .background(
-                                    if (currentResizeMode == androidx.media3.ui.AspectRatioFrameLayout.RESIZE_MODE_ZOOM)
-                                        Color(0xFF2196F3).copy(alpha = 0.85f)
-                                    else
-                                        Color.Black.copy(alpha = 0.65f),
-                                    CircleShape
-                                )
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.AspectRatio,
-                                contentDescription = "Aspect Ratio",
-                                tint = Color.White,
-                                modifier = Modifier.size(20.dp)
-                            )
-                        }
-
-                        // PiP Button
-                        IconButton(
-                            onClick = {
-                                com.musicplayer.lytrix.ui.component.safeEnterPip(activityContext, viewModel)
-                            },
-                            modifier = Modifier
-                                .size(40.dp)
-                                .background(Color.Black.copy(alpha = 0.65f), CircleShape)
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.PictureInPictureAlt,
-                                contentDescription = "PiP",
-                                tint = Color.White,
-                                modifier = Modifier.size(20.dp)
-                            )
-                        }
-                    }
-                }
-            }
-
-            // Bottom Controls Overlay
-            AnimatedVisibility(
-                visible = showControls,
-                enter = fadeIn() + slideInVertically(initialOffsetY = { 50 }),
-                exit = fadeOut() + slideOutVertically(targetOffsetY = { 50 }),
-                modifier = Modifier
-                    .align(Alignment.BottomCenter)
-                    .fillMaxWidth()
-                    .background(Brush.verticalGradient(listOf(Color.Transparent, Color.Black.copy(alpha = 0.85f))))
-                    .navigationBarsPadding()
-                    .padding(horizontal = 32.dp, vertical = 16.dp)
-            ) {
-                Column {
-                    val positionToShow = if (isDraggingSlider) sliderDragPosition.toLong() else (draggingPosition ?: currentPosition)
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(formatMillisToTime(positionToShow), fontSize = 12.sp, color = Color.White)
-                        Slider(
-                            value = (if (duration > 0) positionToShow.toFloat() / duration else 0f).coerceIn(0f, 1f),
-                            onValueChange = { if (!isGuest) draggingPosition = (it * duration).toLong() },
-                            onValueChangeFinished = {
-                                if (!isGuest) draggingPosition?.let {
-                                    onSeek(it)
-                                    exoPlayer?.seekTo(it)
-                                    viewModel.forceSyncToFirebase()
-                                    draggingPosition = null
-                                }
-                            },
-                            colors = SliderDefaults.colors(
-                                thumbColor = effectiveAccent,
-                                activeTrackColor = effectiveAccent,
-                                inactiveTrackColor = Color.White.copy(alpha = 0.3f)
-                            ),
-                            modifier = Modifier
-                                .weight(1f)
-                                .padding(horizontal = 16.dp)
-                        )
-                        Text(formatMillisToTime(duration), fontSize = 12.sp, color = Color.White)
-                    }
-
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(top = 8.dp),
-                        horizontalArrangement = Arrangement.Center,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .size(48.dp)
-                                .pointerInput(Unit) {
-                                    detectTapGestures(onPress = {
-                                        if (!isGuest) {
-                                            val job = coroutineScope.launch { delay(400); isPressingRewind = true }
-                                            tryAwaitRelease()
-                                            job.cancel()
-                                            if (!isPressingRewind) {
-                                                onSkipPrevious()
-                                                viewModel.forceSyncToFirebase()
-                                            }
-                                            isPressingRewind = false
-                                        }
-                                    })
-                                },
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Icon(Icons.Rounded.SkipPrevious, contentDescription = "Skip Previous", tint = Color.White, modifier = Modifier.size(34.dp))
-                        }
-                        Spacer(modifier = Modifier.width(32.dp))
-                        Box(
-                            modifier = Modifier
-                                .size(64.dp)
-                                .clip(CircleShape)
-                                .background(effectiveAccent)
-                                .clickable {
-                                    if (!isGuest) {
-                                        onPlayPause()
-                                        viewModel.forceSyncToFirebase()
-                                    }
-                                },
-                            contentAlignment = Alignment.Center
-                        ) {
-                            if (isBuffering) {
-                                LytrixExpressiveSpinner(color = contentColorOnAccent, strokeWidth = 3.dp, size = 28.dp)
-                            } else {
-                                Icon(
-                                    if (isPlaying) Icons.Rounded.Pause else Icons.Rounded.PlayArrow,
-                                    contentDescription = "Play/Pause",
-                                    tint = contentColorOnAccent,
-                                    modifier = Modifier.size(36.dp)
-                                )
-                            }
-                        }
-                        Spacer(modifier = Modifier.width(32.dp))
-                        Box(
-                            modifier = Modifier
-                                .size(48.dp)
-                                .pointerInput(Unit) {
-                                    detectTapGestures(onPress = {
-                                        if (!isGuest) {
-                                            val job = coroutineScope.launch { delay(400); isPressingForward = true }
-                                            tryAwaitRelease()
-                                            job.cancel()
-                                            if (!isPressingForward) {
-                                                handleSkipNext()
-                                            }
-                                            isPressingForward = false
-                                        }
-                                    })
-                                },
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Icon(Icons.Rounded.SkipNext, contentDescription = "Skip Next", tint = Color.White, modifier = Modifier.size(34.dp))
-                        }
-                    }
-                }
-            }
-        }
+            accentColor = effectiveAccent,
+            contentColorOnAccent = contentColorOnAccent,
+            gesturesEnabled = playerGesturesEnabled,
+            isGuest = isGuest,
+            onPlayPause = onPlayPause,
+            onSkipNext = handleSkipNext,
+            onSkipPrevious = onSkipPrevious,
+            onSeek = onSeek
+        )
     } else if (isLandscape) {
         // 🔥 Landscape Audio Player (Continuous Scroll with Below-the-fold)
         BoxWithConstraints(

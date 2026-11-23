@@ -18,6 +18,10 @@ import android.os.Build
 
 import android.os.Bundle
 
+import android.app.PendingIntent
+import android.app.PictureInPictureParams
+import android.app.RemoteAction
+import android.graphics.drawable.Icon
 import android.view.WindowManager
 
 import androidx.activity.ComponentActivity
@@ -158,10 +162,93 @@ class MainActivity : ComponentActivity() {
 
     companion object {
 
+        const val ACTION_PIP_PLAY_PAUSE = "com.musicplayer.lytrix.pip.PLAY_PAUSE"
+        const val ACTION_PIP_PREV = "com.musicplayer.lytrix.pip.PREV"
+        const val ACTION_PIP_NEXT = "com.musicplayer.lytrix.pip.NEXT"
+
         @SuppressLint("StaticFieldLeak")
 
         var instance: MainActivity? = null
 
+    }
+
+    private val pipReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            when (intent?.action) {
+                ACTION_PIP_PLAY_PAUSE -> {
+                    playerViewModel?.playPause()
+                }
+                ACTION_PIP_PREV -> {
+                    playerViewModel?.skipPrevious()
+                }
+                ACTION_PIP_NEXT -> {
+                    playerViewModel?.skipNext()
+                }
+            }
+        }
+    }
+
+    fun updatePipActions(isPlaying: Boolean) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val actions = mutableListOf<RemoteAction>()
+
+            // 1. Previous
+            val prevPendingIntent = PendingIntent.getBroadcast(
+                this,
+                101,
+                Intent(ACTION_PIP_PREV).setPackage(packageName),
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            )
+            actions.add(
+                RemoteAction(
+                    Icon.createWithResource(this, android.R.drawable.ic_media_previous),
+                    "Previous",
+                    "Previous",
+                    prevPendingIntent
+                )
+            )
+
+            // 2. Play / Pause
+            val playPauseIcon = if (isPlaying) android.R.drawable.ic_media_pause else android.R.drawable.ic_media_play
+            val playPauseTitle = if (isPlaying) "Pause" else "Play"
+            val playPausePendingIntent = PendingIntent.getBroadcast(
+                this,
+                102,
+                Intent(ACTION_PIP_PLAY_PAUSE).setPackage(packageName),
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            )
+            actions.add(
+                RemoteAction(
+                    Icon.createWithResource(this, playPauseIcon),
+                    playPauseTitle,
+                    playPauseTitle,
+                    playPausePendingIntent
+                )
+            )
+
+            // 3. Next
+            val nextPendingIntent = PendingIntent.getBroadcast(
+                this,
+                103,
+                Intent(ACTION_PIP_NEXT).setPackage(packageName),
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            )
+            actions.add(
+                RemoteAction(
+                    Icon.createWithResource(this, android.R.drawable.ic_media_next),
+                    "Next",
+                    "Next",
+                    nextPendingIntent
+                )
+            )
+
+            runCatching {
+                val params = PictureInPictureParams.Builder()
+                    .setActions(actions)
+                    .build()
+                setPictureInPictureParams(params)
+            }
+        }
     }
 
     var playerViewModel: PlayerViewModel? = null
@@ -172,6 +259,9 @@ class MainActivity : ComponentActivity() {
     override fun onPictureInPictureModeChanged(isInPictureInPictureMode: Boolean, newConfig: android.content.res.Configuration) {
         super.onPictureInPictureModeChanged(isInPictureInPictureMode, newConfig)
         isInPipMode = isInPictureInPictureMode
+        if (isInPictureInPictureMode) {
+            updatePipActions(playerViewModel?.isPlaying?.value ?: true)
+        }
     }
 
     private var isNowPlayingExpandedGlobal = false
@@ -237,6 +327,17 @@ class MainActivity : ComponentActivity() {
 
 
         instance = this
+
+        val pipFilter = IntentFilter().apply {
+            addAction(ACTION_PIP_PLAY_PAUSE)
+            addAction(ACTION_PIP_PREV)
+            addAction(ACTION_PIP_NEXT)
+        }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            registerReceiver(pipReceiver, pipFilter, Context.RECEIVER_NOT_EXPORTED)
+        } else {
+            registerReceiver(pipReceiver, pipFilter)
+        }
 
 
 
@@ -616,6 +717,12 @@ class MainActivity : ComponentActivity() {
                 val currentSong by playerViewModel.currentSong.collectAsState()
 
                 val isPlaying by playerViewModel.isPlaying.collectAsState()
+
+                LaunchedEffect(isPlaying, isInPipMode) {
+                    if (isInPipMode) {
+                        updatePipActions(isPlaying)
+                    }
+                }
 
                 val isBuffering by playerViewModel.isBuffering.collectAsState()
 
@@ -2838,6 +2945,7 @@ class MainActivity : ComponentActivity() {
     override fun onDestroy() {
 
         super.onDestroy()
+        runCatching { unregisterReceiver(pipReceiver) }
 
         if (instance == this) {
 

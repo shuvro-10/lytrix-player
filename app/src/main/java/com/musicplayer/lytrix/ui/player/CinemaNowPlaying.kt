@@ -261,6 +261,7 @@ fun CinemaNowPlayingFullScreen(
     }
 
     val activityContext = context as? Activity
+    val isLandscapeVideoFullscreen by viewModel.isLandscapeVideoFullscreen.collectAsState()
     DisposableEffect(Unit) {
         onDispose {
             if (activityContext?.requestedOrientation != ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED) {
@@ -269,7 +270,26 @@ fun CinemaNowPlayingFullScreen(
         }
     }
 
-    Box(modifier = Modifier.fillMaxSize()) {
+    if (isLandscape && isVideoModeActive && isLandscapeVideoFullscreen) {
+        NowPlayingLandscapeVideoFullScreen(
+            viewModel = viewModel,
+            song = song,
+            artData = artData,
+            isPlaying = isPlaying,
+            isBuffering = isBuffering,
+            currentPosition = currentPosition,
+            duration = duration,
+            accentColor = palette.effectiveAccent,
+            contentColorOnAccent = palette.contentOnAccent,
+            gesturesEnabled = gesturesEnabled,
+            isGuest = isGuest,
+            onPlayPause = onPlayPause,
+            onSkipNext = onSkipNext,
+            onSkipPrevious = onSkipPrevious,
+            onSeek = onSeek
+        )
+    } else {
+        Box(modifier = Modifier.fillMaxSize()) {
         BoxWithConstraints(
             modifier = Modifier
                 .fillMaxSize()
@@ -999,6 +1019,7 @@ fun CinemaNowPlayingFullScreen(
                 }
             }
         )
+    }
     }
 }
 

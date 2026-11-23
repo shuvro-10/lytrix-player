@@ -4,6 +4,7 @@
 package com.musicplayer.lytrix.ui
 
 import com.musicplayer.lytrix.ui.component.NowPlayingVideoOverlayControls
+import com.musicplayer.lytrix.ui.player.NowPlayingLandscapeVideoFullScreen
 
 import android.app.Activity
 import android.content.Context
@@ -629,6 +630,7 @@ fun AppleMusicNowPlayingFullScreen(
 
     val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
     val currentResizeMode by viewModel.videoResizeMode.collectAsState()
+    val isLandscapeVideoFullscreen by viewModel.isLandscapeVideoFullscreen.collectAsState()
     val activityContext = context as? Activity
     DisposableEffect(Unit) {
         onDispose {
@@ -638,7 +640,26 @@ fun AppleMusicNowPlayingFullScreen(
         }
     }
 
-    BoxWithConstraints(
+    if (isLandscape && isVideoModeActive && isLandscapeVideoFullscreen) {
+        NowPlayingLandscapeVideoFullScreen(
+            viewModel = viewModel,
+            song = song,
+            artData = artData,
+            isPlaying = isPlaying,
+            isBuffering = isBuffering,
+            currentPosition = currentPosition,
+            duration = duration,
+            accentColor = effectiveAccent,
+            contentColorOnAccent = contentColorOnAccent,
+            gesturesEnabled = playerGesturesEnabled,
+            isGuest = isGuest,
+            onPlayPause = onPlayPause,
+            onSkipNext = onSkipNext,
+            onSkipPrevious = onSkipPrevious,
+            onSeek = onSeek
+        )
+    } else {
+        BoxWithConstraints(
         modifier = Modifier
             .fillMaxSize()
             .clickable(
@@ -1749,6 +1770,7 @@ if (videoStageActive) {
                 }
             }
         }
+    }
     }
 
     // ==========================================

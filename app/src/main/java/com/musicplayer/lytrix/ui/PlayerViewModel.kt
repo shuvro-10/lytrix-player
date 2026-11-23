@@ -6255,6 +6255,7 @@ class PlayerViewModel : ViewModel() {
     val isVideoModeActive: StateFlow<Boolean> = _isVideoModeActive.asStateFlow()
 
     val videoResizeMode = MutableStateFlow(androidx.media3.ui.AspectRatioFrameLayout.RESIZE_MODE_FIT)
+    val isLandscapeVideoFullscreen = MutableStateFlow(false)
     fun toggleVideoResizeMode() {
         videoResizeMode.value = if (videoResizeMode.value == androidx.media3.ui.AspectRatioFrameLayout.RESIZE_MODE_FIT) {
             androidx.media3.ui.AspectRatioFrameLayout.RESIZE_MODE_ZOOM
@@ -7215,6 +7216,7 @@ class PlayerViewModel : ViewModel() {
     }
 
     fun switchToAudioMode(song: Song) {
+        isLandscapeVideoFullscreen.value = false
         if (song.isVideo) return
 
         timber.log.Timber.tag("VIDEO_LOAD").d("🔄 [SWITCH_TO_AUDIO] Returning to audio mode for '${song.title}'")
