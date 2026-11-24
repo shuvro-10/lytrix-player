@@ -2117,17 +2117,27 @@ suspend fun generateBackupData(context: Context, includeRoom: Boolean = true): J
         dlAbMeta.all.forEach { (k, v) -> dlAbObj.put(k, v.toString()) }
         backupObj.put("downloaded_audiobooks_meta", dlAbObj)
 
+        val sourcePrefs = context.getSharedPreferences("playlist_source", Context.MODE_PRIVATE)
         listOf("playlist_covers", "playlist_ids", "playlist_time", "playlist_source").forEach { name ->
             val sp = context.getSharedPreferences(name, Context.MODE_PRIVATE)
             val obj = JSONObject()
-            sp.all.forEach { (k, v) -> if (v is Long) obj.put(k, v) else obj.put(k, v.toString()) }
+            sp.all.forEach { (k, v) ->
+                // Skip Spotify playlist metadata (Spotify syncs live from its own servers)
+                val isSpotify = sourcePrefs.getString(k, "").equals("Spotify", ignoreCase = true)
+                if (!isSpotify) {
+                    if (v is Long) obj.put(k, v) else obj.put(k, v.toString())
+                }
+            }
             backupObj.put(name, obj)
         }
 
-        // Playlists - FULL RAW (fix)
+        // Playlists - FULL RAW (skip Spotify playlists so Firebase backup remains compact & avoids duplicates)
         val plMetaPrefs = context.getSharedPreferences("online_playlists_meta", Context.MODE_PRIVATE)
-        val plNames = plMetaPrefs.getStringSet("names", emptySet()) ?: emptySet()
-        backupObj.put("online_playlists_meta", JSONObject().apply { put("names", JSONArray(plNames.toList())) })
+        val allPlNames = plMetaPrefs.getStringSet("names", emptySet()) ?: emptySet()
+        val plNames = allPlNames.filter { name ->
+            !sourcePrefs.getString(name, "").equals("Spotify", ignoreCase = true)
+        }
+        backupObj.put("online_playlists_meta", JSONObject().apply { put("names", JSONArray(plNames)) })
         val plDataObj = JSONObject()
         plNames.forEach { name ->
             val sp = context.getSharedPreferences("online_pl_$name", Context.MODE_PRIVATE)
@@ -2320,8 +2330,15 @@ suspend fun restoreBackupData(context: Context, backupData: JSONObject, restoreR
 
             if (backupData.has("online_playlists_meta")) {
                 val meta = backupData.getJSONObject("online_playlists_meta")
+                val srcObj = if (backupData.has("playlist_source")) backupData.getJSONObject("playlist_source") else null
                 if (meta.has("names")) {
-                    val arr = meta.getJSONArray("names"); val set = mutableSetOf<String>(); for (i in 0 until arr.length()) set.add(arr.getString(i))
+                    val arr = meta.getJSONArray("names")
+                    val set = mutableSetOf<String>()
+                    for (i in 0 until arr.length()) {
+                        val pName = arr.getString(i)
+                        val isLegacySpotify = srcObj?.optString(pName, "")?.equals("Spotify", ignoreCase = true) == true
+                        if (!isLegacySpotify) set.add(pName)
+                    }
                     context.getSharedPreferences("online_playlists_meta", Context.MODE_PRIVATE).edit().putStringSet("names", set).apply()
                     if (backupData.has("online_playlists_data")) {
                         val dataObj = backupData.getJSONObject("online_playlists_data")
@@ -2968,7 +2985,7 @@ fun AboutScreen(
                 Column(modifier = Modifier.padding(16.dp)) {
                     Text("Developer: Lytrix Team", color = MaterialTheme.colorScheme.onBackground, fontSize = 18.sp, fontWeight = FontWeight.Bold)
                     Spacer(modifier = Modifier.height(4.dp))
-                    Text("Version: v1.0.2 (Stable)", color = Color.Gray, fontSize = 14.sp)
+                    Text("Version: v1.0.3 (Stable)", color = Color.Gray, fontSize = 14.sp)
                 }
             }
 
