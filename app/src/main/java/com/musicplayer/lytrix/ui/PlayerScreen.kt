@@ -349,8 +349,8 @@ fun PlayerScreen(onNavigateToOnlineSettings: () -> Unit = {},
     var lastBackPressTime by remember { mutableLongStateOf(0L) }
     val activity = context as? android.app.Activity
     BackHandler(enabled = !isNowPlayingExpanded && !isSearchExpanded) {
-        if (pagerState.currentPage != 3) {
-            scope.launch { pagerState.animateScrollToPage(3) }
+        if (pagerState.currentPage != 2) {
+            scope.launch { pagerState.animateScrollToPage(2) }
         } else {
             val currentTime = System.currentTimeMillis()
             if (currentTime - lastBackPressTime < 2000) {
