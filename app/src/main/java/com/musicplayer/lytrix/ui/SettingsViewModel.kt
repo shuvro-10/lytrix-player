@@ -329,7 +329,20 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
                 onSuccess("Password reset link sent to $trimmedEmail. Please check your inbox or spam folder.")
             } catch (e: Exception) {
                 _isEmailLoading.value = false
-                onError(e.localizedMessage ?: "Failed to send reset email.")
+                val rawMsg = e.localizedMessage ?: ""
+                val friendlyMsg = when {
+                    e is com.google.firebase.auth.FirebaseAuthInvalidUserException ||
+                    rawMsg.contains("no user record", ignoreCase = true) ||
+                    rawMsg.contains("user may have been deleted", ignoreCase = true) ||
+                    rawMsg.contains("USER_NOT_FOUND", ignoreCase = true) ->
+                        "No account found with this email. Please check your spelling or register."
+                    rawMsg.contains("network", ignoreCase = true) ->
+                        "Network error. Please check your internet connection."
+                    rawMsg.contains("too many requests", ignoreCase = true) ->
+                        "Too many attempts. Please try again later."
+                    else -> rawMsg.ifBlank { "Failed to send reset email." }
+                }
+                onError(friendlyMsg)
             }
         }
     }
