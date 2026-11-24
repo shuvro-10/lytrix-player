@@ -34,8 +34,8 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
 
 import androidx.compose.animation.core.Spring
-
 import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
 
 import androidx.compose.animation.fadeIn
 
@@ -366,6 +366,25 @@ class MainActivity : ComponentActivity() {
             window.isNavigationBarContrastEnforced = false
 
         }
+
+        // 🚀 120 FPS / High Refresh Rate Unlock (Xiaomi HyperOS, Samsung, OnePlus, etc.)
+        try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                val wm = getSystemService(Context.WINDOW_SERVICE) as? android.view.WindowManager
+                @Suppress("DEPRECATION")
+                val disp = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) display else wm?.defaultDisplay
+                val modes = disp?.supportedModes
+                val maxMode = modes?.maxByOrNull { it.refreshRate }
+                if (maxMode != null && maxMode.refreshRate > 60f) {
+                    val lp = window.attributes
+                    lp.preferredDisplayModeId = maxMode.modeId
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                        lp.preferredRefreshRate = maxMode.refreshRate
+                    }
+                    window.attributes = lp
+                }
+            }
+        } catch (_: Exception) {}
 
         if (com.musicplayer.lytrix.ui.PrivacyPreferencesManager.isDisableScreenshot(this)) {
 
@@ -1783,13 +1802,13 @@ class MainActivity : ComponentActivity() {
 
                                     animationSpec = spring(
 
-                                        dampingRatio = 0.85f,
+                                        dampingRatio = 0.82f,
 
-                                        stiffness = Spring.StiffnessLow
+                                        stiffness = Spring.StiffnessMediumLow
 
                                     )
 
-                                ) + fadeIn(),
+                                ) + fadeIn(animationSpec = tween(durationMillis = 180)),
 
                                 exit = slideOutVertically(
 
@@ -1797,15 +1816,17 @@ class MainActivity : ComponentActivity() {
 
                                     animationSpec = spring(
 
-                                        dampingRatio = 0.85f,
+                                        dampingRatio = 0.82f,
 
-                                        stiffness = Spring.StiffnessLow
+                                        stiffness = Spring.StiffnessMediumLow
 
                                     )
 
-                                ) + fadeOut(),
+                                ) + fadeOut(animationSpec = tween(durationMillis = 180)),
 
-                                modifier = Modifier.fillMaxSize()
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .graphicsLayer { }
 
                             ) {
 
