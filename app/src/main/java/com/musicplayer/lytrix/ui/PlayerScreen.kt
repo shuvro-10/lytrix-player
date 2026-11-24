@@ -399,7 +399,7 @@ fun PlayerScreen(onNavigateToOnlineSettings: () -> Unit = {},
     val accentColor = com.musicplayer.lytrix.ui.theme.LocalAccentColor.current
 
     Box(modifier = modifier.fillMaxSize()) {
-        val isDiscoverTab = pagerState.currentPage <= 1
+        val isDiscoverTab = pagerState.currentPage == 0
         PremiumVideoBackground(theme = currentPremiumTheme, isDiscoverTab = isDiscoverTab)
 
         if (bgUri.isNotBlank()) {
@@ -433,7 +433,7 @@ fun PlayerScreen(onNavigateToOnlineSettings: () -> Unit = {},
                 Column(modifier = Modifier.fillMaxSize()) {
 
                     AnimatedVisibility(
-                        visible = pagerState.currentPage > 1,
+                        visible = pagerState.currentPage > 0,
                         enter = expandVertically() + fadeIn(),
                         exit = shrinkVertically() + fadeOut()
                     ) {
