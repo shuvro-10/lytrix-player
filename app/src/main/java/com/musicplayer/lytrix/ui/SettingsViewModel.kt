@@ -312,6 +312,28 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
         }
     }
 
+    // ==========================================
+    // 🔥 NEW: Password Reset Email via Firebase
+    // ==========================================
+    fun sendPasswordResetEmail(email: String, onSuccess: (String) -> Unit, onError: (String) -> Unit) {
+        val trimmedEmail = email.trim()
+        if (!android.util.Patterns.EMAIL_ADDRESS.matcher(trimmedEmail).matches()) {
+            onError("Please enter a valid email address.")
+            return
+        }
+        viewModelScope.launch {
+            _isEmailLoading.value = true
+            try {
+                auth.sendPasswordResetEmail(trimmedEmail).await()
+                _isEmailLoading.value = false
+                onSuccess("Password reset link sent to $trimmedEmail. Please check your inbox or spam folder.")
+            } catch (e: Exception) {
+                _isEmailLoading.value = false
+                onError(e.localizedMessage ?: "Failed to send reset email.")
+            }
+        }
+    }
+
     fun clearAuthError() { _authError.value = null }
 
     fun signOut() {

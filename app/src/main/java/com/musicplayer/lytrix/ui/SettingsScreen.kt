@@ -1974,6 +1974,35 @@ fun BackupRestoreScreen(viewModel: SettingsViewModel, onNavigateBack: () -> Unit
                         Spacer(modifier = Modifier.height(12.dp))
                         OutlinedTextField(value = passwordField, onValueChange = { passwordField = it; dialogError = null }, label = { Text("Password (min 6)") }, singleLine = true, modifier = Modifier.fillMaxWidth(), visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(), trailingIcon = { IconButton(onClick = { passwordVisible = !passwordVisible }) { Icon(if (passwordVisible) TablerIcons.EyeOff else TablerIcons.Eye, contentDescription = null, modifier=Modifier.size(18.dp)) } }, leadingIcon = { Icon(TablerIcons.Lock, contentDescription = null, modifier=Modifier.size(18.dp)) })
 
+                        if (emailTab == 0) {
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.End
+                            ) {
+                                Text(
+                                    text = "Forgot Password?",
+                                    fontSize = 12.sp,
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = accentColor,
+                                    modifier = Modifier
+                                        .clickable(enabled = !isEmailLoading) {
+                                            if (emailField.isBlank()) {
+                                                dialogError = "Please enter your email above first."
+                                            } else {
+                                                dialogError = null
+                                                viewModel.sendPasswordResetEmail(
+                                                    email = emailField,
+                                                    onSuccess = { msg -> dialogError = msg },
+                                                    onError = { err -> dialogError = err }
+                                                )
+                                            }
+                                        }
+                                        .padding(vertical = 4.dp, horizontal = 2.dp)
+                                )
+                            }
+                        }
+
                         if (dialogError != null) {
                             Spacer(modifier = Modifier.height(12.dp))
                             val isSuccess = dialogError!!.contains("sent", true) || dialogError!!.contains("resent", true)
