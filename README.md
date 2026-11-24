@@ -13,12 +13,13 @@
 [![Jetpack Compose](https://img.shields.io/badge/UI-Jetpack%20Compose-4285F4.svg?logo=jetpackcompose&style=flat-square)](https://developer.android.com/compose)
 [![Material 3](https://img.shields.io/badge/Design-Material%203%20Expressive-6750A4.svg?style=flat-square)](https://m3.material.io/)
 
-[**📥 Download Latest APK**](https://github.com/shuvro-10/lytrix-player/releases/latest) • [**✨ Features**](#-key-features) • [**📱 Screenshots**](#-user-interface) • [**🛠️ Build Guide**](#-building-from-source) • [**🙏 Credits**](#-acknowledgments--credits)
+[**📥 Download Latest APK**](https://github.com/shuvro-10/lytrix-player/releases/latest) • [**✨ Features**](#key-features) • [**📱 Screenshots**](#screenshots) • [**🛠️ Build Guide**](#building-from-source) • [**🙏 Credits**](#credits)
 
 </div>
 
 ---
 
+<a id="key-features"></a>
 ## 🌟 Key Features
 
 ### 🎧 Dual-Source Online Music Streaming
@@ -61,6 +62,25 @@
 
 ---
 
+<a id="screenshots"></a>
+## 📱 Screenshots
+
+<div align="center">
+
+| Local Library | Smart Home Feed | Speed Dial & Quick Picks | Now Playing (M3) |
+| :---: | :---: | :---: | :---: |
+| <img src="assets/screenshots/01_library.jpg" width="200" alt="Local Library" /> | <img src="assets/screenshots/02_home.jpg" width="200" alt="Smart Home Feed" /> | <img src="assets/screenshots/03_speed_dial.jpg" width="200" alt="Speed Dial" /> | <img src="assets/screenshots/04_now_playing.jpg" width="200" alt="Now Playing" /> |
+
+<br/>
+
+| Canvas & Turntable | Synchronized Lyrics | Dynamic Themes & Visualizer |
+| :---: | :---: | :---: |
+| <img src="assets/screenshots/05_canvas_turntable.jpg" width="200" alt="Canvas & Turntable" /> | <img src="assets/screenshots/06_synced_lyrics.jpg" width="200" alt="Synchronized Lyrics" /> | <img src="assets/screenshots/07_player_theme.jpg" width="200" alt="Player Themes" /> |
+
+</div>
+
+---
+
 ## 🏗️ Architecture & Technology Stack
 
 | Layer | Technologies |
@@ -75,6 +95,7 @@
 
 ---
 
+<a id="building-from-source"></a>
 ## 🛠️ Building from Source
 
 ### Prerequisites
@@ -105,6 +126,7 @@
 
 ---
 
+<a id="credits"></a>
 ## 🙏 Acknowledgments & Credits
 
 Lytrix Player stands on the shoulders of giants. We express our heartfelt gratitude to the remarkable open-source projects, authors, and communities whose work inspired, contributed to, or is utilized within this project:
