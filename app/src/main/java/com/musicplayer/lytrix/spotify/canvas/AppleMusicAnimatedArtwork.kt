@@ -76,7 +76,8 @@ object AppleMusicAnimatedArtwork {
             val isLocal = song.filePath !in listOf("ONLINE_LYTRIX", "ONLINE") && !song.uriString.startsWith("http")
             if (isLocal) return@withContext null
 
-            if (!SpotifyPreferencesManager.isAnimatedArtworkEnabled(context)) {
+            val artworkPrefs = com.musicplayer.lytrix.artwork.ArtworkPreferencesManager.getInstance(context)
+            if (!artworkPrefs.animatedCoversEnabled.value) {
                 return@withContext null
             }
 
@@ -91,7 +92,6 @@ object AppleMusicAnimatedArtwork {
                            lowerTitle.contains("slowed") || lowerTitle.contains("reverb")
             if (isMashup) return@withContext null
 
-            val artworkPrefs = com.musicplayer.lytrix.artwork.ArtworkPreferencesManager.getInstance(context)
             val preferredResolution = artworkPrefs.animatedCoverResolution.value
             val cacheKey = "${title.lowercase(Locale.US)}_${artist.lowercase(Locale.US)}_$preferredResolution"
             inMemoryCache[cacheKey]?.let { return@withContext it }
@@ -103,6 +103,9 @@ object AppleMusicAnimatedArtwork {
             }
 
             var token = getDeveloperToken(context)
+            if (isTokenExpired(token)) {
+                token = scrapeFreshToken(context) ?: token
+            }
             var videoUrl = searchMotionArtwork(token, title, artist, song.album, preferredResolution)
 
             // If failed with 401 or null, refresh token and retry once
@@ -167,6 +170,21 @@ object AppleMusicAnimatedArtwork {
             Log.e(TAG, "Error scraping Apple Music token", e)
         }
         null
+    }
+
+    private fun isTokenExpired(jwt: String): Boolean {
+        return try {
+            val parts = jwt.split(".")
+            if (parts.size < 2) return true
+            var payload = parts[1]
+            val remainder = payload.length % 4
+            if (remainder > 0) payload += "=".repeat(4 - remainder)
+            val decoded = android.util.Base64.decode(payload, android.util.Base64.URL_SAFE).toString(Charsets.UTF_8)
+            val expSec = JSONObject(decoded).optLong("exp", 0L)
+            expSec > 0L && (expSec * 1000L) <= (System.currentTimeMillis() + 60_000L)
+        } catch (e: Exception) {
+            false
+        }
     }
 
     private fun isWebPlayToken(jwt: String): Boolean {
@@ -486,10 +504,49 @@ object AppleMusicAnimatedArtwork {
         return s.trim()
     }
 
+    private sealed class ArtistQueryResult {
+        data class Found(val url: String) : ArtistQueryResult()
+        object NotFound : ArtistQueryResult()
+        object AuthError : ArtistQueryResult()
+        object NetworkError : ArtistQueryResult()
+    }
+
+    private suspend fun fetchArtistMediaWithRetry(
+        context: Context,
+        cleanName: String,
+        extendEditorialVideo: Boolean,
+        extractor: (JSONObject) -> String?
+    ): Pair<String?, Boolean> {
+        var token = getDeveloperToken(context)
+        if (isTokenExpired(token)) {
+            token = scrapeFreshToken(context) ?: token
+        }
+        if (token.isBlank()) return null to true
+
+        var hadError = false
+        var refreshed = false
+        for (sf in listOf("us", "in")) {
+            var res = queryArtistCatalog(sf, cleanName, token, extendEditorialVideo, extractor)
+            if (res is ArtistQueryResult.AuthError && !refreshed) {
+                refreshed = true
+                val fresh = scrapeFreshToken(context)
+                if (!fresh.isNullOrBlank() && fresh != token) {
+                    token = fresh
+                    res = queryArtistCatalog(sf, cleanName, token, extendEditorialVideo, extractor)
+                }
+            }
+            when (res) {
+                is ArtistQueryResult.Found -> return res.url to false
+                is ArtistQueryResult.AuthError, is ArtistQueryResult.NetworkError -> hadError = true
+                is ArtistQueryResult.NotFound -> Unit
+            }
+        }
+        return null to hadError
+    }
+
     suspend fun getArtistMotionUrl(context: Context, rawArtistName: String, forcedResolution: String? = null): String? = withContext(Dispatchers.IO) {
         val artworkPrefs = com.musicplayer.lytrix.artwork.ArtworkPreferencesManager.getInstance(context)
-        val isVideoEnabled = artworkPrefs.appleArtistVideos.value
-        if (!isVideoEnabled) {
+        if (!artworkPrefs.appleArtistVideos.value) {
             return@withContext null
         }
 
@@ -506,40 +563,30 @@ object AppleMusicAnimatedArtwork {
         if (prefs.contains(cacheKey)) {
             val cached = prefs.getString(cacheKey, null)
             inMemoryArtistCache[cacheKey] = cached ?: ""
-            return@withContext cached
+            return@withContext cached?.ifEmpty { null }
         }
 
-        val token = getDeveloperToken(context)
-        if (token.isNullOrBlank()) {
-            Log.w(TAG, "Apple Music artist motion: No developer token available")
-            return@withContext null
+        val (motionUrl, hadError) = fetchArtistMediaWithRetry(context, cleanName, extendEditorialVideo = true) { attrs ->
+            val editorialVideo = attrs.optJSONObject("editorialVideo") ?: return@fetchArtistMediaWithRetry null
+            // Prioritize 1:1 square for 400dp header to avoid 200% zoom blur, then widescreen, then fullscreen
+            editorialVideo.optJSONObject("motionArtistSquare1x1")?.optString("video")?.takeIf { it.isNotBlank() }
+                ?: editorialVideo.optJSONObject("motionArtistWide16x9")?.optString("video")?.takeIf { it.isNotBlank() }
+                ?: editorialVideo.optJSONObject("motionArtistFullscreen16x9")?.optString("video")?.takeIf { it.isNotBlank() }
         }
 
-        // Try storefronts: 'us' (global), then 'in' (India/regional)
-        val storefronts = listOf("us", "in")
-        for (sf in storefronts) {
-            val motionUrl = queryArtistMotion(sf, cleanName, token)
-            if (!motionUrl.isNullOrBlank()) {
-                val resolvedUrl = resolveBestRendition(motionUrl, preferredResolution)
-                inMemoryArtistCache[cacheKey] = resolvedUrl
-                prefs.edit().putString(cacheKey, resolvedUrl).apply()
-                Log.i(TAG, "Found Apple Music Artist Motion for '$cleanName' ($sf) [$preferredResolution]: $resolvedUrl")
-                return@withContext resolvedUrl
-            }
+        if (!motionUrl.isNullOrBlank()) {
+            val resolvedUrl = resolveBestRendition(motionUrl, preferredResolution)
+            inMemoryArtistCache[cacheKey] = resolvedUrl
+            prefs.edit().putString(cacheKey, resolvedUrl).apply()
+            Log.i(TAG, "Found Apple Music Artist Motion for '$cleanName' [$preferredResolution]: $resolvedUrl")
+            return@withContext resolvedUrl
         }
 
-        // Fallback to Community Artist Motion (e.g. Arijit Singh, Diljit Dosanjh, etc.)
-        val communityArtistVideo = CommunityMotionManager.getArtistMotionUrl(context, cleanName)
-        if (!communityArtistVideo.isNullOrBlank()) {
-            inMemoryArtistCache[cacheKey] = communityArtistVideo
-            prefs.edit().putString(cacheKey, communityArtistVideo).apply()
-            Log.i(TAG, "Found Community Artist Motion for '$cleanName': $communityArtistVideo")
-            return@withContext communityArtistVideo
+        // Only negative-cache when Apple Music responded cleanly with no match (never on token/network errors)
+        if (!hadError) {
+            inMemoryArtistCache[cacheKey] = ""
+            prefs.edit().putString(cacheKey, "").apply()
         }
-
-        // Negative hit cache
-        inMemoryArtistCache[cacheKey] = ""
-        prefs.edit().putString(cacheKey, "").apply()
         null
     }
 
@@ -561,32 +608,41 @@ object AppleMusicAnimatedArtwork {
         if (prefs.contains(cacheKey)) {
             val cached = prefs.getString(cacheKey, null)
             inMemoryArtistImageCache[cacheKey] = cached ?: ""
-            return@withContext cached
+            return@withContext cached?.ifEmpty { null }
         }
 
-        val token = getDeveloperToken(context)
-        if (token.isNullOrBlank()) return@withContext null
-
-        val storefronts = listOf("us", "in")
-        for (sf in storefronts) {
-            val imgUrl = queryArtistImage(sf, cleanName, token)
-            if (!imgUrl.isNullOrBlank()) {
-                inMemoryArtistImageCache[cacheKey] = imgUrl
-                prefs.edit().putString(cacheKey, imgUrl).apply()
-                Log.i(TAG, "Found Apple Music Artist Image for '$cleanName' ($sf): $imgUrl")
-                return@withContext imgUrl
-            }
+        val (imgUrl, hadError) = fetchArtistMediaWithRetry(context, cleanName, extendEditorialVideo = false) { attrs ->
+            val rawArtworkUrl = attrs.optJSONObject("artwork")?.optString("url")
+            if (!rawArtworkUrl.isNullOrBlank()) {
+                rawArtworkUrl.replace("{w}", "1200").replace("{h}", "1200").replace("{f}", "jpg")
+            } else null
         }
 
-        inMemoryArtistImageCache[cacheKey] = ""
-        prefs.edit().putString(cacheKey, "").apply()
+        if (!imgUrl.isNullOrBlank()) {
+            inMemoryArtistImageCache[cacheKey] = imgUrl
+            prefs.edit().putString(cacheKey, imgUrl).apply()
+            Log.i(TAG, "Found Apple Music Artist Image for '$cleanName': $imgUrl")
+            return@withContext imgUrl
+        }
+
+        if (!hadError) {
+            inMemoryArtistImageCache[cacheKey] = ""
+            prefs.edit().putString(cacheKey, "").apply()
+        }
         null
     }
 
-    private fun queryArtistImage(storefront: String, artistName: String, token: String): String? {
+    private fun queryArtistCatalog(
+        storefront: String,
+        artistName: String,
+        token: String,
+        extendEditorialVideo: Boolean,
+        extractor: (JSONObject) -> String?
+    ): ArtistQueryResult {
         try {
             val encodedTerm = URLEncoder.encode(artistName, "UTF-8")
-            val url = "https://amp-api.music.apple.com/v1/catalog/$storefront/search?term=$encodedTerm&types=artists"
+            val extendParam = if (extendEditorialVideo) "&extend=editorialVideo" else ""
+            val url = "https://amp-api.music.apple.com/v1/catalog/$storefront/search?term=$encodedTerm&types=artists$extendParam"
             val req = Request.Builder()
                 .url(url)
                 .header("Authorization", "Bearer $token")
@@ -595,12 +651,13 @@ object AppleMusicAnimatedArtwork {
                 .build()
 
             httpClient.newCall(req).execute().use { resp ->
-                if (!resp.isSuccessful) return null
-                val body = resp.body?.string() ?: return null
+                if (resp.code == 401 || resp.code == 403) return ArtistQueryResult.AuthError
+                if (!resp.isSuccessful) return ArtistQueryResult.NetworkError
+                val body = resp.body?.string() ?: return ArtistQueryResult.NotFound
                 val root = JSONObject(body)
                 val artists = root.optJSONObject("results")
                     ?.optJSONObject("artists")
-                    ?.optJSONArray("data") ?: return null
+                    ?.optJSONArray("data") ?: return ArtistQueryResult.NotFound
 
                 val cleanTarget = artistName.lowercase(Locale.ROOT)
                 val targetTokens = cleanTarget.split(Regex("\\s+")).filter { it.length > 1 }.toSet()
@@ -616,68 +673,15 @@ object AppleMusicAnimatedArtwork {
                             (name.contains(cleanTarget) || cleanTarget.contains(name))
 
                     if (!isMatch) continue
-
-                    val rawArtworkUrl = attrs.optJSONObject("artwork")?.optString("url") ?: continue
-                    if (rawArtworkUrl.isNotBlank()) {
-                        return rawArtworkUrl.replace("{w}", "1200").replace("{h}", "1200").replace("{f}", "jpg")
-                    }
+                    val extracted = extractor(attrs)
+                    if (!extracted.isNullOrBlank()) return ArtistQueryResult.Found(extracted)
                 }
+                return ArtistQueryResult.NotFound
             }
         } catch (e: Exception) {
-            Log.w(TAG, "queryArtistImage error for '$artistName' ($storefront): ${e.message}")
+            Log.w(TAG, "queryArtistCatalog error for '$artistName' ($storefront): ${e.message}")
+            return ArtistQueryResult.NetworkError
         }
-        return null
-    }
-
-    private fun queryArtistMotion(storefront: String, artistName: String, token: String): String? {
-        try {
-            val encodedTerm = URLEncoder.encode(artistName, "UTF-8")
-            val url = "https://amp-api.music.apple.com/v1/catalog/$storefront/search?term=$encodedTerm&types=artists&extend=editorialVideo"
-            val req = Request.Builder()
-                .url(url)
-                .header("Authorization", "Bearer $token")
-                .header("Origin", "https://music.apple.com")
-                .header("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36")
-                .build()
-
-            httpClient.newCall(req).execute().use { resp ->
-                if (!resp.isSuccessful) return null
-                val body = resp.body?.string() ?: return null
-                val root = JSONObject(body)
-                val artists = root.optJSONObject("results")
-                    ?.optJSONObject("artists")
-                    ?.optJSONArray("data") ?: return null
-
-                val cleanTarget = artistName.lowercase(Locale.ROOT)
-                val targetTokens = cleanTarget.split(Regex("\\s+")).filter { it.length > 1 }.toSet()
-
-                for (i in 0 until artists.length()) {
-                    val art = artists.optJSONObject(i) ?: continue
-                    val attrs = art.optJSONObject("attributes") ?: continue
-                    val name = attrs.optString("name", "").lowercase(Locale.ROOT)
-                    val artTokens = name.split(Regex("\\s+")).filter { it.length > 1 }.toSet()
-
-                    val isMatch = name == cleanTarget ||
-                            (targetTokens.isNotEmpty() && targetTokens.intersect(artTokens).size >= targetTokens.size) ||
-                            (name.contains(cleanTarget) || cleanTarget.contains(name))
-
-                    if (!isMatch) continue
-
-                    val editorialVideo = attrs.optJSONObject("editorialVideo") ?: continue
-                    // Prioritize 1:1 square for 400dp header to avoid 200% zoom blur, then widescreen, then fullscreen
-                    val videoUrl = editorialVideo.optJSONObject("motionArtistSquare1x1")?.optString("video")
-                        ?: editorialVideo.optJSONObject("motionArtistWide16x9")?.optString("video")
-                        ?: editorialVideo.optJSONObject("motionArtistFullscreen16x9")?.optString("video")
-
-                    if (!videoUrl.isNullOrBlank()) {
-                        return videoUrl
-                    }
-                }
-            }
-        } catch (e: Exception) {
-            Log.w(TAG, "queryArtistMotion error for '$artistName' ($storefront): ${e.message}")
-        }
-        return null
     }
 
     fun clearCache() {

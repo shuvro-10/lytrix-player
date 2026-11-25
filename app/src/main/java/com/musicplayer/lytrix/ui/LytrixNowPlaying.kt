@@ -89,7 +89,6 @@ import com.musicplayer.lytrix.ui.component.NextSongTransitionArt
 import com.musicplayer.lytrix.ui.component.PlayerCoverWithGestures
 import com.musicplayer.lytrix.ui.component.LoopingCoverVideoPlayer
 import com.musicplayer.lytrix.ui.component.ArtistMotionVideoPlayer
-import com.musicplayer.lytrix.spotify.SpotifyPreferencesManager
 import com.musicplayer.lytrix.spotify.canvas.AppleMusicAnimatedArtwork
 import android.content.res.Configuration
 import androidx.core.view.WindowCompat
@@ -2336,17 +2335,17 @@ fun MeldNowPlayingBelowTheFold(
     val relatedData = rawRelatedData?.takeIf { it.songKey.isBlank() || it.songKey == song.id.toString() }
     val isLoading by viewModel.isNowPlayingRelatedLoading.collectAsState()
 
-    val isHeroVideoEnabled by remember {
-        SpotifyPreferencesManager.getInstance(context).artistHeroVideoEnabled
-    }.collectAsState(initial = false)
+    val artworkPrefs = remember { ArtworkPreferencesManager.getInstance(context) }
+    val isHeroVideoEnabled by artworkPrefs.appleArtistVideos.collectAsState()
+    val heroVideoResolution by artworkPrefs.appleArtistVideoResolution.collectAsState()
 
     val targetArtistName = relatedData?.artistName?.ifBlank { song.artist } ?: song.artist
     var artistMotionUrl by remember(targetArtistName) { mutableStateOf<String?>(null) }
 
-    LaunchedEffect(targetArtistName, isHeroVideoEnabled) {
+    LaunchedEffect(targetArtistName, isHeroVideoEnabled, heroVideoResolution) {
         if (isHeroVideoEnabled && targetArtistName.isNotBlank()) {
             artistMotionUrl = withContext(Dispatchers.IO) {
-                AppleMusicAnimatedArtwork.getArtistMotionUrl(context, targetArtistName)
+                AppleMusicAnimatedArtwork.getArtistMotionUrl(context, targetArtistName, heroVideoResolution)
             }
         } else {
             artistMotionUrl = null

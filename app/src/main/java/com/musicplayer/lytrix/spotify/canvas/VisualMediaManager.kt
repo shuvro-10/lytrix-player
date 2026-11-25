@@ -76,14 +76,15 @@ object VisualMediaManager {
 
             when (source) {
                 CanvasContentSource.YOUTUBE_MUSIC_VIDEO -> {
-                    val ytKey = "yt_${song.id}_${song.originalId ?: ""}"
+                    val ytMode = artworkPrefs.youtubeCanvasMode.value
+                    val ytQuality = artworkPrefs.youtubeCanvasQuality.value
+                    val ytKey = "yt_${song.id}_${song.originalId ?: ""}_${ytMode}_$ytQuality"
                     inMemoryCache[ytKey]?.let {
                         Log.i(TAG, "[VisualMedia] CACHE HIT -> YouTube Video Canvas | Song: '${song.title}'")
                         return@withContext it
                     }
                     val ytUrl = YouTubeVideoCanvasManager.getVideoCanvasUrl(context, song)
                     if (!ytUrl.isNullOrBlank()) {
-                        val ytMode = artworkPrefs.youtubeCanvasMode.value
                         val clips = if (ytMode == com.musicplayer.lytrix.artwork.YouTubeCanvasMode.SHORT_CLIPS) {
                             val dur = (song.duration).takeIf { it > 10_000L } ?: 180_000L
                             com.musicplayer.lytrix.artwork.youtubeCanvasClips(dur)
@@ -98,7 +99,8 @@ object VisualMediaManager {
                 }
 
                 CanvasContentSource.APPLE_MUSIC -> {
-                    val appleKey = "apple_${song.id}_${song.originalId ?: ""}"
+                    val appleRes = artworkPrefs.animatedCoverResolution.value
+                    val appleKey = "apple_${song.id}_${song.originalId ?: ""}_$appleRes"
                     inMemoryCache[appleKey]?.let {
                         Log.i(TAG, "[VisualMedia] CACHE HIT -> Apple Music Animated Artwork | Song: '${song.title}'")
                         return@withContext it

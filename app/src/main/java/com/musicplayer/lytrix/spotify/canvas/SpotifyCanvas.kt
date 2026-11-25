@@ -150,7 +150,7 @@ object SpotifyCanvas {
 
             val prefsMgr = SpotifyPreferencesManager.getInstance(context)
             val spDc = prefsMgr.spDc.first()
-            val canvasEnabled = prefsMgr.canvasEnabled.first()
+            val canvasEnabled = com.musicplayer.lytrix.artwork.ArtworkPreferencesManager.getInstance(context).canvasEnabled.value
             Log.i(TAG, "getCanvasUrl called for '${song.title}' by '${song.artist}' | spDcPresent=${spDc.isNotBlank()}, canvasEnabled=$canvasEnabled")
 
             if (spDc.isBlank()) {
@@ -304,9 +304,8 @@ object SpotifyCanvas {
                     return@withContext null
                 }
                 val bytes = response.body?.bytes() ?: return@withContext null
-                val hexStr = bytes.joinToString("") { "%02x".format(it) }
                 val contentEncoding = response.header("Content-Encoding")
-                Log.i(TAG, "canvaz-cache response size: ${bytes.size} bytes (encoding: $contentEncoding, hex: $hexStr)")
+                Log.i(TAG, "canvaz-cache response size: ${bytes.size} bytes (encoding: $contentEncoding)")
 
                 var canvasUrl: String? = null
                 try {
